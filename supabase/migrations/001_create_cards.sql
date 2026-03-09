@@ -36,26 +36,31 @@ create index if not exists cards_user_id_idx on public.cards(user_id);
 alter table public.cards enable row level security;
 
 -- RLS: anyone can read published cards (public card page, no auth needed)
+drop policy if exists "Published cards are viewable by everyone" on public.cards;
 create policy "Published cards are viewable by everyone"
   on public.cards for select
   using (is_published = true);
 
 -- RLS: authenticated users can read all their own cards (including drafts)
+drop policy if exists "Users can read own cards" on public.cards;
 create policy "Users can read own cards"
   on public.cards for select
   using (auth.uid() = user_id);
 
 -- RLS: authenticated users can create their own cards
+drop policy if exists "Users can create own cards" on public.cards;
 create policy "Users can create own cards"
   on public.cards for insert
   with check (auth.uid() = user_id);
 
 -- RLS: authenticated users can update their own cards
+drop policy if exists "Users can update own cards" on public.cards;
 create policy "Users can update own cards"
   on public.cards for update
   using (auth.uid() = user_id);
 
 -- RLS: authenticated users can delete their own cards
+drop policy if exists "Users can delete own cards" on public.cards;
 create policy "Users can delete own cards"
   on public.cards for delete
   using (auth.uid() = user_id);
@@ -69,6 +74,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists cards_updated_at on public.cards;
 create trigger cards_updated_at
   before update on public.cards
   for each row execute function public.handle_updated_at();
@@ -82,11 +88,13 @@ values ('photos', 'photos', true)
 on conflict (id) do nothing;
 
 -- Anyone can read photos (they appear on public card pages)
+drop policy if exists "Photos are publicly readable" on storage.objects;
 create policy "Photos are publicly readable"
   on storage.objects for select
   using (bucket_id = 'photos');
 
 -- Authenticated users can upload photos to their own folder
+drop policy if exists "Users can upload own photos" on storage.objects;
 create policy "Users can upload own photos"
   on storage.objects for insert
   with check (
@@ -95,6 +103,7 @@ create policy "Users can upload own photos"
   );
 
 -- Authenticated users can update their own photos
+drop policy if exists "Users can update own photos" on storage.objects;
 create policy "Users can update own photos"
   on storage.objects for update
   using (
@@ -103,6 +112,7 @@ create policy "Users can update own photos"
   );
 
 -- Authenticated users can delete their own photos
+drop policy if exists "Users can delete own photos" on storage.objects;
 create policy "Users can delete own photos"
   on storage.objects for delete
   using (
