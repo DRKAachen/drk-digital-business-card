@@ -1,0 +1,75 @@
+@use '@/styles/variables' as *;
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: $white;
+  border-bottom: 1px solid $gray-200;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-6;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: $spacing-3 $spacing-4;
+
+  @media (min-width: $breakpoint-md) {
+    padding: $spacing-3 $spacing-8;
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  font-weight: 600;
+  font-size: $font-size-base;
+  white-space: nowrap;
+
+  span {
+    @media (max-width: ($breakpoint-sm - 1px)) {
+      display: none;
+    }
+  }
+}
+
+.nav {
+  display: flex;
+  gap: $spacing-1;
+  margin-left: auto;
+}
+
+.navLink {
+  padding: $spacing-2 $spacing-3;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $gray-600;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: $gray-100;
+    color: $gray-900;
+  }
+}
+
+.content {
+  flex: 1;
+  max-width: 1024px;
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-6 $spacing-4 $spacing-12;
+
+  @media (min-width: $breakpoint-md) {
+    padding: $spacing-8 $spacing-8 $spacing-16;
+  }
+}

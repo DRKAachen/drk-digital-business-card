@@ -1,0 +1,124 @@
+@use '@/styles/variables' as *;
+
+.heading {
+  font-size: $font-size-2xl;
+  margin-bottom: $spacing-6;
+}
+
+.empty {
+  text-align: center;
+  padding: $spacing-16 $spacing-4;
+
+  h1 {
+    font-size: $font-size-2xl;
+    margin-bottom: $spacing-2;
+  }
+
+  p {
+    color: $gray-600;
+    margin-bottom: $spacing-6;
+  }
+}
+
+.cardPreview {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  margin-bottom: $spacing-6;
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-5;
+  padding: $spacing-6;
+  background: linear-gradient(135deg, $drk-red 0%, $drk-red-dark 100%);
+  color: $white;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-full;
+  background: rgba($white, 0.2);
+  border: 2px solid rgba($white, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-size: $font-size-xl;
+  font-weight: 700;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: 600;
+}
+
+.title {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.org {
+  font-size: $font-size-sm;
+  opacity: 0.75;
+}
+
+.meta {
+  padding: $spacing-5 $spacing-6;
+}
+
+.metaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-2 0;
+  font-size: $font-size-sm;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid $gray-100;
+  }
+}
+
+.metaLabel {
+  color: $gray-500;
+  font-weight: 500;
+}
+
+.metaLink {
+  color: $drk-red;
+  font-size: $font-size-xs;
+  word-break: break-all;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.statusPublished {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.statusDraft {
+  color: $gray-400;
+  font-weight: 600;
+}
+
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-3;
+}

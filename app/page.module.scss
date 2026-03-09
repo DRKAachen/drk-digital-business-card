@@ -1,0 +1,107 @@
+@use '@/styles/variables' as *;
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $spacing-16 $spacing-4 $spacing-12;
+  background: linear-gradient(180deg, $white 0%, $gray-50 100%);
+}
+
+.title {
+  font-size: $font-size-3xl;
+  margin-top: $spacing-6;
+  margin-bottom: $spacing-2;
+
+  @media (min-width: $breakpoint-md) {
+    font-size: 2.5rem;
+  }
+}
+
+.subtitle {
+  font-size: $font-size-lg;
+  color: $drk-red;
+  font-weight: 500;
+  margin-bottom: $spacing-4;
+}
+
+.description {
+  max-width: 500px;
+  color: $gray-600;
+  line-height: 1.7;
+  margin-bottom: $spacing-8;
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-4;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-6;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: $spacing-8 $spacing-4 $spacing-16;
+
+  @media (min-width: $breakpoint-md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.feature {
+  text-align: center;
+  padding: $spacing-6;
+  background: $white;
+  border-radius: $radius-xl;
+  border: 1px solid $gray-200;
+
+  h3 {
+    font-size: $font-size-lg;
+    margin-bottom: $spacing-2;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $gray-600;
+    line-height: 1.6;
+  }
+}
+
+.featureIcon {
+  font-size: 2rem;
+  margin-bottom: $spacing-3;
+}
+
+.footer {
+  margin-top: auto;
+  padding: $spacing-6 $spacing-4;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  border-top: 1px solid $gray-200;
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-6;
+  margin-bottom: $spacing-2;
+
+  a {
+    color: $gray-600;
+    text-decoration: underline;
+
+    &:hover {
+      color: $drk-red;
+    }
+  }
+}

@@ -1,0 +1,70 @@
+@use '@/styles/variables' as *;
+
+.container {
+  max-width: 500px;
+}
+
+.qrWrapper {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-6;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-xl;
+  margin-bottom: $spacing-4;
+
+  canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.sizeSelector {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  margin-bottom: $spacing-6;
+}
+
+.sizeLabel {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  white-space: nowrap;
+}
+
+.urlBox {
+  margin-bottom: $spacing-6;
+}
+
+.urlLabel {
+  display: block;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  color: $gray-400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: $spacing-1;
+}
+
+.urlRow {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.downloadRow {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+  margin-bottom: $spacing-6;
+
+  @media (min-width: $breakpoint-sm) {
+    flex-direction: row;
+  }
+}
+
+.hint {
+  font-size: $font-size-xs;
+  color: $gray-400;
+  line-height: 1.6;
+}
