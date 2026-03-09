@@ -419,6 +419,17 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
               : 'Ihre Karte ist nur als Entwurf gespeichert.'}
           </span>
         </label>
+        {form.is_published && (
+          <p className={styles.publishNotice}>
+            Mit der Veröffentlichung werden Ihre eingegebenen Kontaktdaten (Name, Position,
+            Kontaktdaten, Adresse, Online-Profile und ggf. Foto) über eine öffentliche URL
+            für jeden abrufbar. Sie können die Veröffentlichung jederzeit rückgängig machen.
+            Mehr dazu in unserer{' '}
+            <a href="/datenschutz" target="_blank" rel="noopener noreferrer">
+              Datenschutzerklärung
+            </a>.
+          </p>
+        )}
       </fieldset>
 
       {error && <p className={styles.errorMsg}>{error}</p>}

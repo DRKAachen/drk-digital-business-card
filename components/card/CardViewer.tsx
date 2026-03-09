@@ -157,8 +157,12 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
       </div>
 
       <p className={styles.privacy}>
-        Keine Cookies. Keine Tracking. Ihre Daten sind sicher.
+        Keine Cookies. Kein Tracking. Ihre Daten sind sicher.
       </p>
+      <nav className={styles.legalLinks} aria-label="Rechtliche Hinweise">
+        <a href="/impressum">Impressum</a>
+        <a href="/datenschutz">Datenschutz</a>
+      </nav>
     </div>
   )
 }

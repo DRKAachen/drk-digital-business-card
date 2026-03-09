@@ -73,3 +73,21 @@
     padding: $spacing-8 $spacing-8 $spacing-16;
   }
 }
+
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: $spacing-6;
+  padding: $spacing-4 $spacing-4 $spacing-6;
+  border-top: 1px solid $gray-200;
+  font-size: $font-size-sm;
+
+  a {
+    color: $gray-400;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $drk-red;
+    }
+  }
+}

@@ -38,3 +38,19 @@
   max-width: 320px;
   line-height: 1.6;
 }
+
+.legalLinks {
+  display: flex;
+  gap: $spacing-6;
+  margin-top: $spacing-6;
+  font-size: $font-size-sm;
+
+  a {
+    color: $gray-400;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $drk-red;
+    }
+  }
+}

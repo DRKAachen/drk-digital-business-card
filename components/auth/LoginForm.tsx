@@ -88,6 +88,13 @@ export default function LoginForm() {
       <p className={styles.hint}>
         Sie erhalten einen Anmelde-Link per E-Mail. Kein Passwort nötig.
       </p>
+      <p className={styles.privacyNotice}>
+        Mit der Anmeldung stimmen Sie unserer{' '}
+        <a href="/datenschutz" target="_blank" rel="noopener noreferrer">
+          Datenschutzerklärung
+        </a>{' '}
+        zu. Ihre E-Mail-Adresse wird ausschließlich zur Authentifizierung verwendet.
+      </p>
     </form>
   )
 }

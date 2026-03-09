@@ -126,6 +126,27 @@
   margin-left: 32px;
 }
 
+.publishNotice {
+  margin-top: $spacing-3;
+  margin-left: 32px;
+  padding: $spacing-3 $spacing-4;
+  background: rgba($drk-red, 0.04);
+  border: 1px solid rgba($drk-red, 0.12);
+  border-radius: $radius-md;
+  font-size: $font-size-xs;
+  color: $gray-600;
+  line-height: 1.6;
+
+  a {
+    color: $drk-red;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
 .errorMsg {
   padding: $spacing-3 $spacing-4;
   background: rgba($drk-red, 0.08);

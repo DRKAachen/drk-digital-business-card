@@ -31,11 +31,18 @@ export default function DashboardLayout({
             <Link href="/dashboard/qr" className={styles.navLink}>
               QR-Code
             </Link>
+            <Link href="/dashboard/settings" className={styles.navLink}>
+              Konto
+            </Link>
           </nav>
           <LogoutButton />
         </div>
       </header>
       <div className={styles.content}>{children}</div>
+      <footer className={styles.footer}>
+        <Link href="/impressum">Impressum</Link>
+        <Link href="/datenschutz">Datenschutz</Link>
+      </footer>
     </div>
   )
 }

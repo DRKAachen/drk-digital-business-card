@@ -185,3 +185,19 @@
   color: $gray-400;
   line-height: 1.6;
 }
+
+.legalLinks {
+  display: flex;
+  gap: $spacing-4;
+  margin-top: $spacing-3;
+  font-size: $font-size-xs;
+
+  a {
+    color: $gray-400;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $drk-red;
+    }
+  }
+}

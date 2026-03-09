@@ -23,6 +23,10 @@ export default function LoginPage() {
         </p>
         <LoginForm />
       </div>
+      <nav className={styles.legalLinks} aria-label="Rechtliche Hinweise">
+        <Link href="/impressum">Impressum</Link>
+        <Link href="/datenschutz">Datenschutz</Link>
+      </nav>
     </div>
   )
 }
