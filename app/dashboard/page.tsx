@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getPhotoUrl } from '@/lib/photo'
+import { getSiteUrl } from '@/lib/url'
 import type { CardRow } from '@/lib/supabase/types'
 import styles from './page.module.scss'
 
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
     .maybeSingle()
 
   const card = data as CardRow | null
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const siteUrl = getSiteUrl()
 
   if (!card) {
     return (

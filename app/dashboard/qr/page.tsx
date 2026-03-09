@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getSiteUrl } from '@/lib/url'
 import QrExport from '@/components/qr/QrExport'
 
 export const metadata = {
@@ -67,7 +68,7 @@ export default async function QrPage() {
     )
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const siteUrl = getSiteUrl()
   const cardUrl = `${siteUrl}/c/${card.slug}`
   const cardName = `${card.first_name}-${card.last_name}`.toLowerCase()
 

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getPhotoUrl } from '@/lib/photo'
+import { getSiteUrl } from '@/lib/url'
 import type { CardRow } from '@/lib/supabase/types'
 import CardViewer from '@/components/card/CardViewer'
 
@@ -65,7 +66,7 @@ export default async function CardPage({ params }: PageProps) {
 
   if (!card) notFound()
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const siteUrl = getSiteUrl()
   const cardUrl = `${siteUrl}/c/${card.slug}`
   const vcardUrl = `${siteUrl}/c/${card.slug}/vcard`
 

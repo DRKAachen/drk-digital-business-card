@@ -28,6 +28,9 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null)
 
+  const rawUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const siteUrl = rawUrl && !/^https?:\/\//i.test(rawUrl) ? `https://${rawUrl}` : rawUrl
+
   const [form, setForm] = useState({
     first_name: existingCard?.first_name ?? '',
     last_name: existingCard?.last_name ?? '',
@@ -399,7 +402,7 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
           />
           {form.slug && (
             <p className={styles.slugPreview}>
-              Ihre Karte: <code>{process.env.NEXT_PUBLIC_SITE_URL || ''}/c/{form.slug}</code>
+              Ihre Karte: <code>{siteUrl}/c/{form.slug}</code>
               {slugAvailable === true && <span className={styles.slugOk}> ✓ verfügbar</span>}
               {slugAvailable === false && <span className={styles.slugTaken}> ✗ vergeben</span>}
             </p>

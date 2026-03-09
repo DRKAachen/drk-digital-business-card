@@ -20,7 +20,8 @@ export default function LoginForm() {
     setError(null)
 
     const supabase = createClient()
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const siteUrl = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`
 
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
