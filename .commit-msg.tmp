@@ -1,0 +1,6 @@
+Fix mobile UI: add hamburger menu to dashboard, fix login footer layout
+
+- Add animated hamburger menu component for mobile dashboard navigation
+- Desktop nav and logout hidden on small screens, replaced by slide-down menu
+- Menu auto-closes on route change, includes active link highlighting
+- Fix login page footer links overlapping card (add flex-direction: column)

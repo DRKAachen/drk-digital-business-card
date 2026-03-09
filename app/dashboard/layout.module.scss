@@ -42,10 +42,22 @@
   }
 }
 
-.nav {
-  display: flex;
+.desktopNav {
+  display: none;
   gap: $spacing-1;
   margin-left: auto;
+
+  @media (min-width: $breakpoint-md) {
+    display: flex;
+  }
+}
+
+.desktopLogout {
+  display: none;
+
+  @media (min-width: $breakpoint-md) {
+    display: block;
+  }
 }
 
 .navLink {

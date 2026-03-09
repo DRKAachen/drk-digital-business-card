@@ -2,10 +2,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './layout.module.scss'
 import LogoutButton from '@/components/auth/LogoutButton'
+import MobileMenu from '@/components/nav/MobileMenu'
 
 /**
  * Dashboard layout wraps all authenticated pages.
- * Provides navigation header with links to dashboard sections.
+ * Provides navigation header with desktop nav links and a mobile hamburger menu.
  * Auth protection is handled by middleware.ts (redirects to /login if unauthenticated).
  */
 export default function DashboardLayout({
@@ -21,7 +22,7 @@ export default function DashboardLayout({
             <Image src="/drk-logo.svg" alt="DRK" width={32} height={32} />
             <span>Visitenkarte</span>
           </Link>
-          <nav className={styles.nav}>
+          <nav className={styles.desktopNav}>
             <Link href="/dashboard" className={styles.navLink}>
               Übersicht
             </Link>
@@ -35,7 +36,10 @@ export default function DashboardLayout({
               Konto
             </Link>
           </nav>
-          <LogoutButton />
+          <div className={styles.desktopLogout}>
+            <LogoutButton />
+          </div>
+          <MobileMenu />
         </div>
       </header>
       <div className={styles.content}>{children}</div>
