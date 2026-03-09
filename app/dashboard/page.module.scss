@@ -118,7 +118,15 @@
 }
 
 .quickActions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: $spacing-3;
+  grid-template-columns: 1fr;
+
+  @media (min-width: $breakpoint-sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.actionBtn {
+  width: 100%;
 }

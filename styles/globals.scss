@@ -139,6 +139,16 @@ h1, h2, h3, h4 {
   }
 }
 
+.btn--outline {
+  background-color: transparent;
+  color: $drk-red;
+  border: 1px solid $drk-red;
+
+  &:hover:not(:disabled) {
+    background-color: rgba($drk-red, 0.06);
+  }
+}
+
 .btn--full {
   width: 100%;
 }

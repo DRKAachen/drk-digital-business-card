@@ -14,6 +14,8 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **Open Graph**: Rich-Link-Previews beim Teilen auf Social Media
 - **Datenexport**: JSON-Export aller persönlichen Daten (DSGVO Art. 20)
 - **Kontolöschung**: Self-Service-Löschung von Konto, Visitenkarte und Fotos (DSGVO Art. 17)
+- **Responsive Dashboard**: Icons in Aktions-Buttons, responsive Grid-Layout, Hamburger-Menü für Mobilgeräte
+- **Visitenkarten-Design**: DRK-Blau-Header (#002d55), Outline-Icons, klickbare Kontaktzeilen mit Hover-Feedback
 
 ## Tech Stack
 

@@ -130,19 +130,45 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
 
         {/* Details */}
         <div className={styles.details}>
-          {card.email && <DetailRow label="E-Mail" value={card.email} href={`mailto:${card.email}`} />}
-          {card.phone && <DetailRow label="Telefon" value={card.phone} href={`tel:${card.phone}`} />}
-          {card.mobile && <DetailRow label="Mobil" value={card.mobile} href={`tel:${card.mobile}`} />}
-          {hasAddress && <DetailRow label="Adresse" value={formatAddress(card)} />}
-          {card.website && (
+          {card.email && (
+            <DetailRow label="E-MAIL" value={card.email} href={`mailto:${card.email}`} icon={<EmailIcon />} />
+          )}
+          {card.phone && (
+            <DetailRow label="TELEFON" value={card.phone} href={`tel:${card.phone}`} icon={<PhoneIcon />} />
+          )}
+          {card.mobile && (
+            <DetailRow label="MOBIL" value={card.mobile} href={`tel:${card.mobile}`} icon={<MobileIcon />} />
+          )}
+          {hasAddress && (
             <DetailRow
-              label="Webseite"
-              value={card.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')}
-              href={ensureProtocol(card.website)}
+              label="ADRESSE"
+              value={
+                <span>
+                  {card.street && <>{card.street}<br /></>}
+                  {(card.zip || card.city) && <>{[card.zip, card.city].filter(Boolean).join(' ')}<br /></>}
+                  {card.country && <>{card.country}</>}
+                </span>
+              }
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(card))}`}
+              icon={<MapIcon />}
+              external
             />
           )}
-          {card.linkedin && <DetailRow label="LinkedIn" value="Profil öffnen" href={ensureProtocol(card.linkedin)} />}
-          {card.xing && <DetailRow label="Xing" value="Profil öffnen" href={ensureProtocol(card.xing)} />}
+          {card.website && (
+            <DetailRow
+              label="WEBSEITE"
+              value={card.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')}
+              href={ensureProtocol(card.website)}
+              icon={<WebIcon />}
+              external
+            />
+          )}
+          {card.linkedin && (
+            <DetailRow label="LINKEDIN" value="Profil öffnen" href={ensureProtocol(card.linkedin)} icon={<LinkedInIcon />} external />
+          )}
+          {card.xing && (
+            <DetailRow label="XING" value="Profil öffnen" href={ensureProtocol(card.xing)} icon={<XingIcon />} external />
+          )}
         </div>
 
         {/* Footer buttons */}
@@ -167,27 +193,52 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
   )
 }
 
-function DetailRow({ label, value, href }: { label: string; value: string; href?: string }) {
-  return (
-    <div className={styles.detail}>
-      <span className={styles.detailLabel}>{label}</span>
-      {href ? (
-        <a href={href} className={styles.detailLink} target="_blank" rel="noopener noreferrer">
-          {value}
-        </a>
-      ) : (
-        <span>{value}</span>
-      )}
-    </div>
-  )
+interface DetailRowProps {
+  label: string
+  value: string | React.ReactNode
+  href?: string
+  icon?: React.ReactNode
+  external?: boolean
 }
 
+/**
+ * Detail row: label sits independently on top, then value text and icon
+ * are centered together on the second line. Entire area is clickable when href is set.
+ */
+function DetailRow({ label, value, href, icon, external }: DetailRowProps) {
+  const content = (
+    <>
+      <span className={styles.detailLabel}>{label}</span>
+      <div className={styles.detailRow}>
+        <span className={styles.detailText}>{value}</span>
+        {icon && <span className={styles.detailIcon}>{icon}</span>}
+      </div>
+    </>
+  )
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={styles.detail}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+      >
+        {content}
+      </a>
+    )
+  }
+
+  return <div className={styles.detail}>{content}</div>
+}
+
+/** Flat single-line address for the Google Maps query string */
 function formatAddress(card: CardRow): string {
   const parts: string[] = []
   if (card.street) parts.push(card.street)
   if (card.zip && card.city) parts.push(`${card.zip} ${card.city}`)
   else if (card.city) parts.push(card.city)
-  if (card.country && card.country !== 'Deutschland') parts.push(card.country)
+  if (card.country) parts.push(card.country)
   return parts.join(', ')
 }
 
@@ -236,4 +287,12 @@ function DownloadIcon() {
 
 function ShareIcon() {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+}
+
+function LinkedInIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+}
+
+function XingIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2l-8 14 5 9"/><path d="M4 7l3 5-2 4"/></svg>
 }

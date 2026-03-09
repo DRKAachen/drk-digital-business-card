@@ -31,7 +31,7 @@
   flex-direction: column;
   align-items: center;
   padding: $spacing-8 $spacing-6 $spacing-6;
-  background: linear-gradient(135deg, $drk-red 0%, $drk-red-dark 100%);
+  background: linear-gradient(135deg, $drk-blue 0%, #001e3a 100%);
   color: $white;
   text-align: center;
 }
@@ -120,8 +120,8 @@
   width: 40px;
   height: 40px;
   border-radius: $radius-full;
-  background-color: rgba($drk-red, 0.1);
-  color: $drk-red;
+  background-color: rgba($drk-blue, 0.1);
+  color: $drk-blue;
 
   svg {
     width: 20px;
@@ -137,16 +137,44 @@
 
 // Details
 .details {
-  padding: $spacing-4 $spacing-6;
+  padding: $spacing-2 $spacing-6;
 }
 
 .detail {
   display: flex;
   flex-direction: column;
-  padding: $spacing-3 0;
+  padding: $spacing-3 $spacing-4 $spacing-3 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: $radius-md;
+  transition: background-color $transition-fast;
 
   &:not(:last-child) {
     border-bottom: 1px solid $gray-200;
+  }
+
+  a#{&} {
+    margin: 0 (-$spacing-3);
+    padding: $spacing-3 $spacing-5 $spacing-3 $spacing-3;
+
+    &:hover {
+      background-color: $gray-100;
+    }
+
+    &:not(:last-child) {
+      border-bottom: none;
+    }
+
+    .detailText {
+      text-decoration: underline;
+      text-decoration-color: $gray-300;
+      text-underline-offset: 2px;
+    }
+
+    &:hover .detailText {
+      text-decoration-color: $drk-blue;
+      color: $drk-blue;
+    }
   }
 }
 
@@ -159,13 +187,31 @@
   margin-bottom: $spacing-1;
 }
 
-.detailLink {
-  color: $drk-red;
-  font-weight: 500;
-  transition: color $transition-fast;
+.detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-4;
+}
 
-  &:hover {
-    text-decoration: underline;
+.detailText {
+  color: $gray-900;
+  font-weight: 500;
+  line-height: 1.4;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.detailIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: $drk-blue;
+
+  svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
