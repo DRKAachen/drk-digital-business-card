@@ -78,7 +78,7 @@ export default async function DashboardPage() {
             </span>
           </div>
           {card.is_published && (
-            <div className={styles.metaItem}>
+            <div className={styles.metaItemStacked}>
               <span className={styles.metaLabel}>URL</span>
               <a
                 href={cardUrl}

@@ -3,9 +3,10 @@ import type { CardRow } from './supabase/types'
 /**
  * Generates a vCard 3.0 string (.vcf) from a card database row.
  * vCard 3.0 is used for maximum compatibility across iOS, Android, and desktop.
+ * Photos are embedded as base64 for iOS contact app compatibility.
  * See RFC 2426 for the specification.
  */
-export function generateVCard(card: CardRow, photoUrl?: string): string {
+export async function generateVCard(card: CardRow, photoUrl?: string): Promise<string> {
   const lines: string[] = [
     'BEGIN:VCARD',
     'VERSION:3.0',
@@ -51,13 +52,36 @@ export function generateVCard(card: CardRow, photoUrl?: string): string {
   }
 
   if (photoUrl) {
-    lines.push(`PHOTO;VALUE=URI:${esc(photoUrl)}`)
+    const photoBase64 = await fetchPhotoAsBase64(photoUrl)
+    if (photoBase64) {
+      lines.push(`PHOTO;ENCODING=b;TYPE=JPEG:${photoBase64}`)
+    }
   }
 
   lines.push(`REV:${new Date().toISOString()}`)
   lines.push('END:VCARD')
 
   return lines.join('\r\n')
+}
+
+/**
+ * Fetches a photo from a URL and returns it as a base64-encoded string.
+ * Returns null if the fetch fails so the vCard can still be generated without a photo.
+ */
+async function fetchPhotoAsBase64(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const buffer = await response.arrayBuffer()
+    const bytes = new Uint8Array(buffer)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary)
+  } catch {
+    return null
+  }
 }
 
 /** Escapes vCard special characters (semicolons, commas, backslashes, newlines) */

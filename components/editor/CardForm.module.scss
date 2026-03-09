@@ -78,6 +78,12 @@
   }
 }
 
+.fieldHint {
+  font-size: $font-size-xs;
+  color: $gray-400;
+  margin-top: $spacing-1;
+}
+
 .slugPreview {
   font-size: $font-size-sm;
   color: $gray-500;

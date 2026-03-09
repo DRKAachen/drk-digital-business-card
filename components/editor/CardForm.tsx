@@ -160,6 +160,13 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
         photoPath = path
       }
 
+      /** Ensures a URL has https:// prepended if no protocol is present */
+      function normalizeUrl(val: string): string | null {
+        const trimmed = val.trim()
+        if (!trimmed) return null
+        return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+      }
+
       const cardData = {
         slug: form.slug,
         first_name: form.first_name.trim(),
@@ -173,9 +180,9 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
         city: form.city.trim() || null,
         zip: form.zip.trim() || null,
         country: form.country.trim() || null,
-        website: form.website.trim() || null,
-        linkedin: form.linkedin.trim() || null,
-        xing: form.xing.trim() || null,
+        website: normalizeUrl(form.website),
+        linkedin: normalizeUrl(form.linkedin),
+        xing: normalizeUrl(form.xing),
         photo_path: photoPath,
         is_published: form.is_published,
       }
@@ -202,6 +209,7 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
         setSuccessMsg('Visitenkarte erfolgreich erstellt!')
       }
 
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten.')
@@ -362,26 +370,27 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
         <div className="form-field">
           <label htmlFor="website" className="form-field__label">Webseite</label>
           <input
-            id="website" name="website" type="url"
+            id="website" name="website" type="text"
             value={form.website} onChange={handleChange}
-            className="form-field__input" placeholder="https://www.drk.de"
+            className="form-field__input" placeholder="www.drk.de"
           />
+          <p className={styles.fieldHint}>z.B. www.drk.de oder https://drk.de</p>
         </div>
         <div className={styles.row}>
           <div className="form-field">
             <label htmlFor="linkedin" className="form-field__label">LinkedIn</label>
             <input
-              id="linkedin" name="linkedin" type="url"
+              id="linkedin" name="linkedin" type="text"
               value={form.linkedin} onChange={handleChange}
-              className="form-field__input" placeholder="https://linkedin.com/in/..."
+              className="form-field__input" placeholder="linkedin.com/in/..."
             />
           </div>
           <div className="form-field">
             <label htmlFor="xing" className="form-field__label">Xing</label>
             <input
-              id="xing" name="xing" type="url"
+              id="xing" name="xing" type="text"
               value={form.xing} onChange={handleChange}
-              className="form-field__input" placeholder="https://xing.com/profile/..."
+              className="form-field__input" placeholder="xing.com/profile/..."
             />
           </div>
         </div>

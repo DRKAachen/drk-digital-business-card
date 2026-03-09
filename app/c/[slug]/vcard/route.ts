@@ -30,7 +30,7 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   const photoUrl = getPhotoUrl(card.photo_path) ?? undefined
-  const vcf = generateVCard(card, photoUrl)
+  const vcf = await generateVCard(card, photoUrl)
   const filename = `${card.first_name}_${card.last_name}.vcf`
 
   return new NextResponse(vcf, {
