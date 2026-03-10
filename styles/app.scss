@@ -1,85 +1,21 @@
+/**
+ * App-specific styles that extend the DRK design system globals.
+ * The design system handles: reset, fonts, body, .container, .sr-only, .button, dark mode.
+ * This file adds only app-specific utilities: custom button variants, form fields, toast.
+ */
+
 @use 'variables' as *;
 
 // ============================================
-// CSS Reset
+// App-level body tweaks (extend design system reset)
 // ============================================
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
 
 body {
-  font-family: $font-family;
-  font-size: $font-size-base;
-  line-height: 1.5;
-  color: $gray-900;
   background-color: $gray-50;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-}
-
-img, svg {
-  display: block;
-  max-width: 100%;
-}
-
-input, button, textarea, select {
-  font: inherit;
-  color: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-h1, h2, h3, h4 {
-  overflow-wrap: break-word;
-  font-weight: 600;
 }
 
 // ============================================
-// Shared Utility Classes
-// ============================================
-
-.container {
-  width: 100%;
-  max-width: 1024px;
-  margin-inline: auto;
-  padding-inline: $spacing-4;
-
-  @media (min-width: $breakpoint-md) {
-    padding-inline: $spacing-8;
-  }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-// ============================================
-// Shared Button Styles
+// Button variants (used as className strings throughout the app)
 // ============================================
 
 .btn {
@@ -139,22 +75,12 @@ h1, h2, h3, h4 {
   }
 }
 
-.btn--outline {
-  background-color: transparent;
-  color: $drk-red;
-  border: 1px solid $drk-red;
-
-  &:hover:not(:disabled) {
-    background-color: rgba($drk-red, 0.06);
-  }
-}
-
 .btn--full {
   width: 100%;
 }
 
 // ============================================
-// Shared Form Styles
+// Form field styles (used in CardForm, LoginForm, QrExport)
 // ============================================
 
 .form-field {
@@ -207,7 +133,7 @@ h1, h2, h3, h4 {
 }
 
 // ============================================
-// Toast Notification
+// Toast notification (used by CardViewer share)
 // ============================================
 
 .toast {
@@ -232,4 +158,20 @@ h1, h2, h3, h4 {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+// ============================================
+// Screen reader only (fallback if design system doesn't define it)
+// ============================================
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

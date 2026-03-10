@@ -20,6 +20,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript, SCSS
+- **Design System**: `@drkaachen/design-system-ui` (Header, Footer, Navigation, DRK Logo, Fonts)
 - **Backend**: Supabase (PostgreSQL, Auth, Storage) – EU-Region Frankfurt
 - **QR-Code**: qrcode (Canvas + SVG)
 - **Hosting**: Vercel (EU-Region Frankfurt)
@@ -136,7 +137,7 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 1. `NEXT_PUBLIC_ORG_NAME` in `.env.local` anpassen
 2. Impressum in `app/impressum/page.tsx` mit eigenen Organisationsdaten füllen
 3. Datenschutzerklärung in `app/datenschutz/page.tsx` anpassen (Verantwortlicher, DSB, Aufsichtsbehörde)
-4. Optional: Logo in `public/drk-logo.svg` und `public/favicon.svg` austauschen
+4. Logo und Branding werden automatisch über `@drkaachen/design-system-ui` bereitgestellt
 5. Eigenes Supabase-Projekt erstellen und konfigurieren (EU-Region!)
 
 ## Rechtliches

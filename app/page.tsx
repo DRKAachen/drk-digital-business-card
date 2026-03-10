@@ -1,23 +1,18 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import { DrkLogo } from '@drkaachen/design-system-ui'
 import styles from './page.module.scss'
 
 const orgName = process.env.NEXT_PUBLIC_ORG_NAME || 'Deutsches Rotes Kreuz'
 
 /**
  * Landing page explaining the app and providing a login CTA.
+ * Header and Footer are provided by the root layout (design system).
  */
 export default function HomePage() {
   return (
     <div className={styles.page}>
       <div className={styles.hero}>
-        <Image
-          src="/drk-logo.svg"
-          alt="DRK Logo"
-          width={64}
-          height={64}
-          priority
-        />
+        <DrkLogo size={64} />
         <h1 className={styles.title}>Digitale Visitenkarte</h1>
         <p className={styles.subtitle}>{orgName}</p>
         <p className={styles.description}>
@@ -48,14 +43,6 @@ export default function HomePage() {
           <p>Gehostet in der EU. Sie behalten die volle Kontrolle über Ihre Daten.</p>
         </div>
       </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.footerLinks}>
-          <Link href="/impressum">Impressum</Link>
-          <Link href="/datenschutz">Datenschutz</Link>
-        </div>
-        <p>© {new Date().getFullYear()} {orgName}</p>
-      </footer>
     </div>
   )
 }
