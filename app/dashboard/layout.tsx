@@ -19,7 +19,7 @@ export default function DashboardLayout({
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/dashboard" className={styles.brand}>
-            <Image src="/drk-logo.svg" alt="DRK" width={32} height={32} />
+            <Image src="/drk-logo.png" alt="DRK" width={36} height={36} />
             <span>Visitenkarte</span>
           </Link>
           <nav className={styles.desktopNav}>

@@ -15,7 +15,7 @@ export default function LoginPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <Link href="/" className={styles.logo}>
-          <Image src="/drk-logo.svg" alt="DRK" width={48} height={48} />
+          <Image src="/drk-logo.png" alt="DRK" width={56} height={56} />
         </Link>
         <h1 className={styles.title}>Anmelden</h1>
         <p className={styles.subtitle}>

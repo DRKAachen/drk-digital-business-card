@@ -12,10 +12,10 @@ export default function HomePage() {
     <div className={styles.page}>
       <div className={styles.hero}>
         <Image
-          src="/drk-logo.svg"
+          src="/drk-logo.png"
           alt="DRK Logo"
-          width={64}
-          height={64}
+          width={80}
+          height={80}
           priority
         />
         <h1 className={styles.title}>Digitale Visitenkarte</h1>

@@ -36,7 +36,7 @@ export default function QrExport({ cardUrl, cardName }: QrExportProps) {
     drawLogo(canvas)
   }
 
-  /** Draws the DRK logo in the center. Error correction level H tolerates ~30% coverage. */
+  /** Draws the DRK logo in the center: red cross on white. Error correction H tolerates ~30% coverage. */
   function drawLogo(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -45,22 +45,22 @@ export default function QrExport({ cardUrl, cardName }: QrExportProps) {
     const center = canvas.width / 2
     const padding = 4
 
-    // White circle behind logo
+    // Light gray border circle (subtle outline)
+    ctx.fillStyle = '#E5E5E5'
+    ctx.beginPath()
+    ctx.arc(center, center, logoSize / 2 + padding + 1, 0, Math.PI * 2)
+    ctx.fill()
+
+    // White circle background
     ctx.fillStyle = '#ffffff'
     ctx.beginPath()
     ctx.arc(center, center, logoSize / 2 + padding, 0, Math.PI * 2)
     ctx.fill()
 
-    // Red circle
-    ctx.fillStyle = '#E30613'
-    ctx.beginPath()
-    ctx.arc(center, center, logoSize / 2, 0, Math.PI * 2)
-    ctx.fill()
-
-    // White cross
+    // Red cross
     const barWidth = logoSize * 0.24
     const barHeight = logoSize * 0.6
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#E30613'
     ctx.fillRect(center - barWidth / 2, center - barHeight / 2, barWidth, barHeight)
     ctx.fillRect(center - barHeight / 2, center - barWidth / 2, barHeight, barWidth)
   }
