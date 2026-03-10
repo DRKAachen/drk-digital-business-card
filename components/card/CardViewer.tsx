@@ -53,7 +53,7 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.logo}>
-            <Image src="/favicon.svg" alt="DRK" width={28} height={28} />
+            <Image src="/drk-logo.png" alt="DRK" width={32} height={32} />
           </div>
           <div className={styles.avatar}>
             {photoUrl ? (

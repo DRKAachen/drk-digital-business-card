@@ -33,36 +33,42 @@ export default function QrExport({ cardUrl, cardName }: QrExportProps) {
       color: { dark: '#000000', light: '#ffffff' },
     })
 
-    drawLogo(canvas)
+    await drawLogo(canvas)
   }
 
-  /** Draws the DRK logo in the center: red cross on white. Error correction H tolerates ~30% coverage. */
-  function drawLogo(canvas: HTMLCanvasElement) {
+  /** Loads the DRK logo image once and caches it for reuse across renders and downloads. */
+  function loadLogoImage(): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image()
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = '/drk-logo.png'
+    })
+  }
+
+  /** Draws the official round DRK logo in the center. Error correction H tolerates ~30% coverage. */
+  async function drawLogo(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const logoSize = canvas.width * 0.18
+    const logoSize = canvas.width * 0.22
     const center = canvas.width / 2
     const padding = 4
 
-    // Light gray border circle (subtle outline)
-    ctx.fillStyle = '#E5E5E5'
-    ctx.beginPath()
-    ctx.arc(center, center, logoSize / 2 + padding + 1, 0, Math.PI * 2)
-    ctx.fill()
-
-    // White circle background
+    // White circle background behind the logo (clears QR modules)
     ctx.fillStyle = '#ffffff'
     ctx.beginPath()
     ctx.arc(center, center, logoSize / 2 + padding, 0, Math.PI * 2)
     ctx.fill()
 
-    // Red cross
-    const barWidth = logoSize * 0.24
-    const barHeight = logoSize * 0.6
-    ctx.fillStyle = '#E30613'
-    ctx.fillRect(center - barWidth / 2, center - barHeight / 2, barWidth, barHeight)
-    ctx.fillRect(center - barHeight / 2, center - barWidth / 2, barHeight, barWidth)
+    // Draw the actual round DRK logo PNG, clipped to a circle
+    const img = await loadLogoImage()
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(center, center, logoSize / 2, 0, Math.PI * 2)
+    ctx.clip()
+    ctx.drawImage(img, center - logoSize / 2, center - logoSize / 2, logoSize, logoSize)
+    ctx.restore()
   }
 
   async function downloadPng() {
@@ -73,7 +79,7 @@ export default function QrExport({ cardUrl, cardName }: QrExportProps) {
       errorCorrectionLevel: 'H',
       color: { dark: '#000000', light: '#ffffff' },
     })
-    drawLogo(canvas)
+    await drawLogo(canvas)
 
     const link = document.createElement('a')
     link.download = `visitenkarte-${cardName}.png`
