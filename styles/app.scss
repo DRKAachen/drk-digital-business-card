@@ -161,6 +161,22 @@ body {
 }
 
 // ============================================
+// Override design system heading font (prefer system font over Merriweather)
+// ============================================
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family;
+}
+
+// ============================================
+// Override design system page title color (neutral dark instead of red)
+// ============================================
+
+.page__title {
+  color: $gray-900;
+}
+
+// ============================================
 // Screen reader only (fallback if design system doesn't define it)
 // ============================================
 

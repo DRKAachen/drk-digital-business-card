@@ -20,7 +20,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript, SCSS
-- **Design System**: `@drkaachen/design-system-ui` (Header, Footer, Navigation, DRK Logo, Fonts)
+- **Design System**: `@drkaachen/design-system-ui` (Header, Navigation, DRK Logo, Fonts, global styles)
 - **Backend**: Supabase (PostgreSQL, Auth, Storage) – EU-Region Frankfurt
 - **QR-Code**: qrcode (Canvas + SVG)
 - **Hosting**: Vercel (EU-Region Frankfurt)
@@ -103,19 +103,25 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 
 ```
 ├── app/                    # Next.js App Router Seiten
-│   ├── api/account/        # Server-side API-Routen
-│   │   ├── delete/         # Kontolöschung (DSGVO Art. 17)
-│   │   └── export/         # Datenexport (DSGVO Art. 20)
-│   ├── c/[slug]/           # Öffentliche Visitenkarten-Seite
-│   │   └── vcard/          # vCard Download API
-│   ├── dashboard/          # Geschützter Bereich
-│   │   ├── edit/           # Visitenkarte bearbeiten
-│   │   ├── qr/             # QR-Code exportieren
-│   │   └── settings/       # Konto & Datenschutz (Export, Löschung)
-│   ├── login/              # Magic-Link Login
-│   ├── datenschutz/        # Datenschutzerklärung
-│   └── impressum/          # Impressum
+│   ├── page.tsx            # Landing Page (standalone, ohne Header/Footer)
+│   ├── layout.tsx          # Root Layout (HTML-Shell, globale Styles)
+│   ├── (shell)/            # Route Group mit Header + Footer
+│   │   ├── layout.tsx      # Shell Layout (DRK Header + AppFooter)
+│   │   ├── auth/callback/  # Supabase Magic-Link Callback
+│   │   ├── c/[slug]/       # Öffentliche Visitenkarten-Seite
+│   │   │   └── vcard/      # vCard Download API
+│   │   ├── dashboard/      # Geschützter Bereich
+│   │   │   ├── edit/       # Visitenkarte bearbeiten
+│   │   │   ├── qr/         # QR-Code exportieren
+│   │   │   └── settings/   # Konto & Datenschutz (Export, Löschung)
+│   │   ├── login/          # Magic-Link Login
+│   │   ├── datenschutz/    # Datenschutzerklärung
+│   │   └── impressum/      # Impressum
+│   └── api/account/        # Server-side API-Routen
+│       ├── delete/         # Kontolöschung (DSGVO Art. 17)
+│       └── export/         # Datenexport (DSGVO Art. 20)
 ├── components/             # React-Komponenten
+│   ├── AppFooter.tsx       # Custom Footer (Impressum + Datenschutz)
 │   ├── account/            # Kontoverwaltung (Export, Löschung)
 │   ├── auth/               # Login, Logout
 │   ├── card/               # Öffentliche Kartenansicht
@@ -126,7 +132,7 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 │   ├── vcard.ts            # vCard 3.0 Generator
 │   ├── slug.ts             # URL-Slug Generierung
 │   └── photo.ts            # Foto-Validierung & URLs
-├── styles/                 # Globale SCSS Styles & Design Tokens
+├── styles/                 # SCSS: app.scss (Overrides), variables.scss (Tokens)
 ├── supabase/migrations/    # SQL-Migrationen
 ├── middleware.ts            # Auth Session Refresh & Route Protection
 └── public/                 # Statische Assets (DRK Logo, Favicon)
@@ -135,8 +141,8 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 ## Anpassung für andere DRK-Verbände
 
 1. `NEXT_PUBLIC_ORG_NAME` in `.env.local` anpassen
-2. Impressum in `app/impressum/page.tsx` mit eigenen Organisationsdaten füllen
-3. Datenschutzerklärung in `app/datenschutz/page.tsx` anpassen (Verantwortlicher, DSB, Aufsichtsbehörde)
+2. Impressum in `app/(shell)/impressum/page.tsx` mit eigenen Organisationsdaten füllen
+3. Datenschutzerklärung in `app/(shell)/datenschutz/page.tsx` anpassen (Verantwortlicher, DSB, Aufsichtsbehörde)
 4. Logo und Branding werden automatisch über `@drkaachen/design-system-ui` bereitgestellt
 5. Eigenes Supabase-Projekt erstellen und konfigurieren (EU-Region!)
 

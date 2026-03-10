@@ -3,6 +3,7 @@
 .page {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .hero {
@@ -10,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: $spacing-12 $spacing-4;
+  padding: $spacing-16 $spacing-4 $spacing-12;
   background: linear-gradient(180deg, $white 0%, $gray-50 100%);
 }
 
@@ -49,7 +50,8 @@
   gap: $spacing-6;
   max-width: 900px;
   margin: 0 auto;
-  padding: $spacing-8 $spacing-4 $spacing-16;
+  padding: $spacing-8 $spacing-4 $spacing-12;
+  flex: 1;
 
   @media (min-width: $breakpoint-md) {
     grid-template-columns: repeat(3, 1fr);
@@ -78,4 +80,33 @@
 .featureIcon {
   font-size: 2rem;
   margin-bottom: $spacing-3;
+}
+
+.footer {
+  border-top: 1px solid $gray-200;
+  padding: $spacing-6 $spacing-4;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $gray-500;
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-3;
+    margin-bottom: $spacing-2;
+
+    a {
+      color: $gray-600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+
+      &:hover {
+        color: $drk-red;
+      }
+    }
+  }
+
+  p {
+    color: $gray-400;
+  }
 }
