@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import styles from './LoginForm.module.scss'
 
-type AuthMode = 'password' | 'magiclink'
+type AuthMode = 'password' | 'magiclink' | 'forgot'
 
 /**
  * Combined auth form supporting email/password login+registration and magic link.
@@ -122,15 +122,92 @@ export default function LoginForm() {
     return 'Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.'
   }
 
+  /** Sends a password reset email via Supabase. */
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    const supabase = createClient()
+    const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const siteUrl = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${siteUrl}/auth/callback?redirect=/auth/reset-password`,
+    })
+
+    setLoading(false)
+
+    if (resetError) {
+      if (resetError.status === 429 || resetError.message?.includes('rate')) {
+        setError('Zu viele Anfragen. Bitte warten Sie einige Minuten.')
+      } else {
+        setError('Fehler beim Senden. Bitte versuchen Sie es erneut.')
+      }
+      return
+    }
+
+    setSent(true)
+  }
+
   if (sent) {
     return (
       <div className={styles.success}>
         <div className={styles.successIcon}>✉️</div>
         <h2>E-Mail gesendet!</h2>
         <p>
-          Wir haben einen Anmelde-Link an <strong>{email}</strong> gesendet.
-          Bitte prüfen Sie Ihr Postfach und klicken Sie auf den Link.
+          {mode === 'forgot'
+            ? <>Wir haben einen Link zum Zurücksetzen Ihres Passworts an <strong>{email}</strong> gesendet. Bitte prüfen Sie Ihr Postfach.</>
+            : <>Wir haben einen Anmelde-Link an <strong>{email}</strong> gesendet. Bitte prüfen Sie Ihr Postfach und klicken Sie auf den Link.</>
+          }
         </p>
+      </div>
+    )
+  }
+
+  if (mode === 'forgot') {
+    return (
+      <div className={styles.formWrapper}>
+        <form onSubmit={handleForgotPassword} className={styles.form}>
+          <div className="form-field">
+            <label htmlFor="email" className="form-field__label">
+              E-Mail-Adresse
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-field__input"
+              placeholder="vorname.nachname@drk.de"
+              required
+              autoComplete="email"
+              autoFocus
+            />
+          </div>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <button
+            type="submit"
+            className="btn btn--primary btn--full"
+            disabled={loading || !email}
+          >
+            {loading ? 'Wird gesendet...' : 'Passwort zurücksetzen'}
+          </button>
+
+          <p className={styles.hint}>
+            Sie erhalten eine E-Mail mit einem Link zum Zurücksetzen Ihres Passworts.
+          </p>
+        </form>
+
+        <button
+          type="button"
+          className={styles.modeToggle}
+          onClick={() => { setMode('password'); setError(null) }}
+        >
+          Zurück zur Anmeldung
+        </button>
       </div>
     )
   }
@@ -243,6 +320,18 @@ export default function LoginForm() {
               minLength={8}
               autoComplete="new-password"
             />
+          </div>
+        )}
+
+        {!isRegister && (
+          <div className={styles.forgotRow}>
+            <button
+              type="button"
+              className={styles.modeToggle}
+              onClick={() => { setMode('forgot'); setError(null) }}
+            >
+              Passwort vergessen?
+            </button>
           </div>
         )}
 
