@@ -46,7 +46,7 @@ export default function DatenschutzPage() {
           Dabei werden folgende personenbezogene Daten verarbeitet:
         </p>
         <ul style={{ paddingLeft: '1.25rem', marginTop: '0.5rem' }}>
-          <li><strong>Authentifizierung:</strong> E-Mail-Adresse (für den Magic-Link-Login)</li>
+          <li><strong>Authentifizierung:</strong> E-Mail-Adresse und ggf. Passwort (für Login per Passwort oder Magic Link)</li>
           <li><strong>Visitenkarte:</strong> Vorname, Nachname, Position/Titel, Organisation, E-Mail, Telefon,
             Mobilnummer, Adresse (Straße, PLZ, Stadt, Land), Webseite, LinkedIn-Profil, Xing-Profil</li>
           <li><strong>Profilfoto:</strong> Optional hochgeladenes Bild (JPEG, PNG oder WebP, max. 2 MB)</li>

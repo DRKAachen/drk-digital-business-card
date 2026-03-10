@@ -1,8 +1,15 @@
 @use '@/styles/variables' as *;
 
-.form {
+.formWrapper {
   width: 100%;
   max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form {
+  width: 100%;
 }
 
 .error {
@@ -38,8 +45,36 @@
   margin-bottom: $spacing-4;
 }
 
+.toggleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  margin-top: $spacing-4;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.toggleSeparator {
+  color: $gray-300;
+}
+
+.modeToggle {
+  background: none;
+  border: none;
+  color: $drk-red;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
 .privacyNotice {
-  margin-top: $spacing-3;
+  margin-top: $spacing-4;
   font-size: $font-size-xs;
   color: $gray-400;
   text-align: center;

@@ -8,7 +8,7 @@ export const metadata = {
 }
 
 /**
- * Login page with magic link authentication.
+ * Login page supporting email/password and magic link authentication.
  */
 export default function LoginPage() {
   return (
