@@ -22,7 +22,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript, SCSS
 - **Backend**: Supabase (PostgreSQL, Auth, Storage) – EU-Region Frankfurt
 - **QR-Code**: qrcode (Canvas + SVG)
-- **Hosting**: Vercel (EU-Region Frankfurt)
+- **Hosting**: Vercel (EU-Region Frankfurt) oder eigenes Server mit Coolify
 
 ## DSGVO / Datenschutz
 
@@ -33,7 +33,7 @@ Die Anwendung wurde unter Berücksichtigung der DSGVO und des TDDDG entwickelt:
 - **Keine Tracking-/Analyse-Cookies**: Nur technisch notwendige Auth-Session-Cookies (TDDDG §25 Abs. 2 Ausnahme)
 - **Einwilligungshinweise**: Datenschutzhinweis beim Login, Einwilligungsinfo bei Veröffentlichung der Visitenkarte
 - **Betroffenenrechte**: Datenexport (Art. 20) und Kontolöschung (Art. 17) als Self-Service im Dashboard
-- **Auftragsverarbeiter dokumentiert**: Supabase (AVV/DPA) und Vercel (DPA mit SCCs)
+- **Auftragsverarbeiter dokumentiert**: Supabase (AVV/DPA) und Vercel bzw. eigener Server/Coolify (kein Drittanbieter-Hosting bei Self-Hosting)
 - **Security Headers**: HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-Content-Type-Options
 - **Impressum/Datenschutz-Links**: Auf allen Seiten erreichbar (2-Klick-Regel)
 
@@ -89,7 +89,75 @@ npm run dev
 
 App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 
-## Deployment (Vercel)
+## Deployment
+
+### Option A: Eigenes Server mit Coolify (Vercel-Alternative)
+
+Coolify ist eine self-hosted Plattform für Builds, Deployments und SSL – ohne Vendor-Lock-in.
+
+#### 1. Coolify auf dem Server installieren
+
+**Voraussetzungen:**
+
+- Server/VPS mit **Ubuntu 22.04+** oder **Debian 11+** (oder anderem Docker-tauglichen Linux)
+- Mindestens **2 vCPU, 2 GB RAM, 30 GB SSD** (Produktion: 4 vCPU, 8 GB RAM, 80+ GB SSD empfohlen)
+- Öffentliche IPv4-Adresse, Ports 80 und 443 erreichbar
+- SSH-Zugang zum Server
+
+**Installation (einzeilig):**
+
+```bash
+curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+```
+
+Nach dem Lauf wird die Coolify-Web-Oberfläche unter der angezeigten URL (z.B. `http://<SERVER-IP>:8000`) erreichbar sein. Beim ersten Aufruf legst du ein Admin-Passwort fest.
+
+Ausführliche Anleitung: [coolify.io/install](https://coolify.io/install).
+
+#### 2. App von Repo auf den Server bringen (über Coolify)
+
+Du musst **nichts manuell auf den Server kopieren**. Coolify baut und startet die App aus dem Git-Repository auf dem Server.
+
+**Schritte in Coolify:**
+
+1. **Projekt anlegen**  
+   In Coolify: Neues Projekt erstellen (z.B. „DRK Visitenkarte“).
+
+2. **Ressource hinzufügen**  
+   - „Add new resource“ → **Application**.  
+   - **Source**: Git – Repository-URL eintragen (HTTPS oder SSH).  
+   - Optional: GitHub/GitLab/Bitbucket/Gitea verbinden, dann Repo auswählen.  
+   - **Branch**: z.B. `main` oder `dev`.
+
+3. **Build-Konfiguration**  
+   - **Build Pack**: `Dockerfile` (im Projekt-Root liegt ein `Dockerfile`).  
+   - **Ports Exposes**: `3000` (Next.js lauscht auf 3000).  
+   - Keine weiteren Pflichtfelder für den Start.
+
+4. **Umgebungsvariablen**  
+   Unter „Environment Variables“ alle Werte aus `.env.example` eintragen (siehe lokale Entwicklung), angepasst an Produktion:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SECRET_KEY`
+   - `NEXT_PUBLIC_SITE_URL` = finale App-URL (z.B. `https://visitenkarte.drk-aachen.de`)
+   - `NEXT_PUBLIC_ORG_NAME` = euer Organisationsname
+
+5. **Domain & SSL**  
+   - In Coolify eine **Domain** für die App eintragen (z.B. `visitenkarte.drk-aachen.de`).  
+   - Coolify kann automatisch **Let’s Encrypt SSL** einrichten (HTTPS).
+
+6. **Deploy starten**  
+   „Deploy“ auslösen. Coolify cloned das Repo auf dem Server, baut das Docker-Image (mit dem bereitgestellten `Dockerfile`) und startet den Container.  
+   Danach ist die App unter der konfigurierten Domain erreichbar.
+
+**Supabase anpassen:**
+
+- In Supabase unter **Authentication → URL Configuration** die **Produktions-URL** (z.B. `https://visitenkarte.drk-aachen.de`) als **Site URL** und in **Redirect URLs** eintragen.
+
+**Zusammenfassung:**  
+Coolify einmal auf dem Server installieren, dann in der Coolify-UI das Git-Repo verbinden, Build Pack „Dockerfile“, Port 3000 und Umgebungsvariablen setzen. Die App wird auf dem Server aus dem Repo gebaut und betrieben – kein manuelles Kopieren von deinem Rechner nötig.
+
+---
+
+### Option B: Deployment (Vercel)
 
 1. Repository mit Vercel verbinden
 2. **Region auf Frankfurt (fra1) setzen** (Project Settings > Functions > Region)
@@ -128,6 +196,8 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 ├── styles/                 # Globale SCSS Styles & Design Tokens
 ├── supabase/migrations/    # SQL-Migrationen
 ├── middleware.ts            # Auth Session Refresh & Route Protection
+├── Dockerfile               # Produktions-Image für Coolify/eigenen Server
+├── .dockerignore            # Ausschlüsse für Docker-Build
 └── public/                 # Statische Assets (DRK Logo, Favicon)
 ```
 
@@ -144,7 +214,7 @@ App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 - **Impressum**: Befüllt mit Angaben des DRK-Kreisverband Städteregion Aachen e.V. (TMG §5, MStV §18)
 - **Datenschutzerklärung**: 13 Abschnitte inkl. Verantwortlicher, DSB, Auftragsverarbeiter, Betroffenenrechte, Beschwerderecht
 - **Supabase DPA**: Auftragsverarbeitungsvereinbarung erforderlich (Dashboard > Settings > Legal)
-- **Vercel DPA**: In den allgemeinen Geschäftsbedingungen enthalten, inkl. EU-Standardvertragsklauseln (SCCs)
+- **Vercel DPA** (nur bei Vercel-Hosting): In den allgemeinen Geschäftsbedingungen enthalten, inkl. EU-Standardvertragsklauseln (SCCs). Bei Self-Hosting mit Coolify entfällt Vercel.
 
 ## Lizenz
 
