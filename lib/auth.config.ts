@@ -8,6 +8,7 @@ import type { NextAuthConfig } from 'next-auth'
  * The full config (with Prisma adapter) is in lib/auth.ts.
  */
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: '/login',
   },
