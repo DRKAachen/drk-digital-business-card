@@ -1,4 +1,4 @@
-import type { CardRow } from './supabase/types'
+import type { CardRow } from './types'
 
 /**
  * Generates a vCard 3.0 string (.vcf) from a card database row.

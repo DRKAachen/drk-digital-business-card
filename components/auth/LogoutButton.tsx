@@ -1,19 +1,13 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signOut } from 'next-auth/react'
 
 /**
- * Logout button that signs the user out and redirects to the landing page.
+ * Logout button that ends the Auth.js session and redirects to the landing page.
  */
 export default function LogoutButton() {
-  const router = useRouter()
-
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+  function handleLogout() {
+    signOut({ callbackUrl: '/' })
   }
 
   return (

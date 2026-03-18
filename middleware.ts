@@ -1,62 +1,35 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import NextAuth from 'next-auth'
+import { NextResponse } from 'next/server'
+import { authConfig } from '@/lib/auth.config'
 
 /**
- * Next.js middleware that refreshes the Supabase auth session on every request.
- * Also protects /dashboard/* routes by redirecting unauthenticated users to /login.
+ * Auth.js middleware that protects /dashboard/* routes and redirects
+ * logged-in users away from /login. Uses the edge-compatible auth config
+ * (no Prisma) so it can run in the Edge Runtime. Session is read from the
+ * JWT cookie without a database round-trip.
  */
-export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+const { auth } = NextAuth(authConfig)
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          )
-        },
-      },
-    },
-  )
+export default auth((req) => {
+  const isLoggedIn = !!req.auth
+  const { pathname } = req.nextUrl
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  // Protect dashboard routes: redirect to login if not authenticated
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    const url = request.nextUrl.clone()
+  if (!isLoggedIn && pathname.startsWith('/dashboard')) {
+    const url = req.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('redirect', request.nextUrl.pathname)
+    url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users away from login page
-  if (user && request.nextUrl.pathname === '/login') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+  if (isLoggedIn && pathname === '/login') {
+    const redirect = req.nextUrl.searchParams.get('redirect') || '/dashboard'
+    const url = req.nextUrl.clone()
+    url.pathname = redirect
+    url.search = ''
     return NextResponse.redirect(url)
   }
-
-  // Pass validated user ID to downstream server components via request header,
-  // so they don't need to call getUser() again (avoids extra network roundtrip).
-  if (user) {
-    supabaseResponse.headers.set('x-user-id', user.id)
-  }
-
-  return supabaseResponse
-}
+})
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/auth/callback', '/auth/reset-password', '/api/:path*'],
+  matcher: ['/dashboard/:path*', '/login'],
 }

@@ -1,10 +1,11 @@
 # ------------------------------------------------------------------------------
-# Stage 1: Install dependencies (cached unless package.json/package-lock.json change)
+# Stage 1: Install dependencies (cached unless package.json/lock/schema change)
 # ------------------------------------------------------------------------------
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 RUN npm ci
 
 # ------------------------------------------------------------------------------
@@ -15,6 +16,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+RUN npx prisma generate
 RUN npm run build
 
 # ------------------------------------------------------------------------------

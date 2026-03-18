@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import Link from 'next/link'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getPhotoUrl } from '@/lib/photo'
 import { getSiteUrl } from '@/lib/url'
-import type { CardRow } from '@/lib/supabase/types'
+import type { CardRow } from '@/lib/types'
 import styles from './page.module.scss'
 
 export const metadata = {
@@ -14,22 +14,15 @@ export const metadata = {
 /**
  * Dashboard overview page.
  * Shows the user's card status and quick links to edit and QR export.
- * User ID comes from middleware header (already validated with getUser()).
  */
 export default async function DashboardPage() {
-  const headerStore = await headers()
-  const userId = headerStore.get('x-user-id')
-  if (!userId) redirect('/login')
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
 
-  const supabase = await createServerSupabaseClient()
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { user_id: session.user.id },
+  })
 
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  const card = data as CardRow | null
   const siteUrl = getSiteUrl()
 
   if (!card) {

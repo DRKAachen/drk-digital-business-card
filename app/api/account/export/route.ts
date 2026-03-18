@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { CardRow } from '@/lib/supabase/types'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { getPhotoUrl } from '@/lib/photo'
 
 /**
  * GET /api/account/export
@@ -15,28 +16,21 @@ import type { CardRow } from '@/lib/supabase/types'
  */
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert.' },
         { status: 401 },
       )
     }
 
-    const { data: cards } = await supabase
-      .from('cards')
-      .select('*')
-      .eq('user_id', user.id)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-    /** Build photo URL from storage path */
-    function buildPhotoUrl(photoPath: string | null): string | null {
-      if (!photoPath) return null
-      return `${supabaseUrl}/storage/v1/object/public/photos/${photoPath}`
-    }
+    const cards = await prisma.card.findMany({
+      where: { user_id: session.user.id },
+    })
 
     const exportData = {
       export_info: {
@@ -45,14 +39,15 @@ export async function GET() {
         application: 'DRK Digitale Visitenkarte',
       },
       account: {
-        id: user.id,
-        email: user.email,
-        created_at: user.created_at,
-        last_sign_in_at: user.last_sign_in_at,
+        id: user?.id,
+        email: user?.email,
+        created_at: user?.createdAt?.toISOString(),
       },
-      cards: (cards || []).map((card: CardRow) => ({
+      cards: cards.map((card) => ({
         ...card,
-        photo_url: buildPhotoUrl(card.photo_path),
+        created_at: card.created_at.toISOString(),
+        updated_at: card.updated_at.toISOString(),
+        photo_url: getPhotoUrl(card.photo_path),
       })),
     }
 

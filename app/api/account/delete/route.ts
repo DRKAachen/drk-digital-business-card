@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { deletePhoto, deleteUserPhotos } from '@/lib/storage'
 
 /**
  * POST /api/account/delete
@@ -10,58 +11,47 @@ import { createAdminClient } from '@/lib/supabase/admin'
  *
  * Deletion order:
  * 1. Fetch user's cards to find photo paths
- * 2. Delete photos from Supabase Storage
- * 3. Delete the auth user (cascades to delete cards via FK constraint)
+ * 2. Delete photos from S3/Garage
+ * 3. Delete the user (cascades to cards, accounts, sessions via FK)
  */
 export async function POST() {
   try {
-    const supabase = await createServerSupabaseClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    const session = await auth()
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Nicht authentifiziert.' },
         { status: 401 },
       )
     }
 
-    const adminClient = createAdminClient()
+    const userId = session.user.id
 
-    const { data: cards } = await adminClient
-      .from('cards')
-      .select('photo_path')
-      .eq('user_id', user.id)
+    const cards = await prisma.card.findMany({
+      where: { user_id: userId },
+      select: { photo_path: true },
+    })
 
-    if (cards && cards.length > 0) {
-      const photoPaths = cards
-        .map((c) => c.photo_path)
-        .filter((p): p is string => !!p)
+    const photoPaths = cards
+      .map((c) => c.photo_path)
+      .filter((p): p is string => !!p)
 
-      if (photoPaths.length > 0) {
-        await adminClient.storage.from('photos').remove(photoPaths)
+    for (const path of photoPaths) {
+      try {
+        await deletePhoto(path)
+      } catch (err) {
+        console.error(`Failed to delete photo ${path}:`, err)
       }
     }
 
-    // Delete all files in the user's storage folder (catches orphaned uploads)
-    const { data: userFiles } = await adminClient.storage
-      .from('photos')
-      .list(user.id)
-
-    if (userFiles && userFiles.length > 0) {
-      const filePaths = userFiles.map((f) => `${user.id}/${f.name}`)
-      await adminClient.storage.from('photos').remove(filePaths)
+    try {
+      await deleteUserPhotos(userId)
+    } catch (err) {
+      console.error('Failed to clean up user photo folder:', err)
     }
 
-    // Delete the auth user -- cascades to delete all cards (FK: on delete cascade)
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id)
-
-    if (deleteError) {
-      console.error('Account deletion failed:', deleteError.message)
-      return NextResponse.json(
-        { error: 'Konto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.' },
-        { status: 500 },
-      )
-    }
+    await prisma.user.delete({
+      where: { id: userId },
+    })
 
     return NextResponse.json({ success: true })
   } catch (err) {

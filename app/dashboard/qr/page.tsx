@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import Link from 'next/link'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/url'
 import QrExport from '@/components/qr/QrExport'
 
@@ -19,22 +19,15 @@ interface CardBasic {
 /**
  * QR code export page. Shows the QR code for the user's published card.
  * If no card exists yet, directs the user to create one first.
- * User ID comes from middleware header (already validated with getUser()).
  */
 export default async function QrPage() {
-  const headerStore = await headers()
-  const userId = headerStore.get('x-user-id')
-  if (!userId) redirect('/login')
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
 
-  const supabase = await createServerSupabaseClient()
-
-  const { data } = await supabase
-    .from('cards')
-    .select('slug, first_name, last_name, is_published')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  const card = data as CardBasic | null
+  const card: CardBasic | null = await prisma.card.findFirst({
+    where: { user_id: session.user.id },
+    select: { slug: true, first_name: true, last_name: true, is_published: true },
+  })
 
   if (!card) {
     return (
