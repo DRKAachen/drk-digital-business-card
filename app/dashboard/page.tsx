@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { getPhotoUrl } from '@/lib/photo'
 import { getSiteUrl } from '@/lib/url'
 import type { CardRow } from '@/lib/types'
+import DeleteCardButton from '@/components/card/DeleteCardButton'
 import styles from './page.module.scss'
 
 export const metadata = {
@@ -113,6 +114,7 @@ export default async function DashboardPage() {
             <ExternalIcon /> Karte ansehen
           </a>
         )}
+        <DeleteCardButton cardId={card.id} cardName={fullName} />
       </div>
     </div>
   )
