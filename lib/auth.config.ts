@@ -20,6 +20,9 @@ export const authConfig = {
       issuer: process.env.AUTH_AUTHENTIK_ISSUER,
       clientId: process.env.AUTH_AUTHENTIK_ID,
       clientSecret: process.env.AUTH_AUTHENTIK_SECRET,
+      // Safe because Authentik is the only sign-in provider —
+      // no risk of a different provider hijacking via matching email.
+      allowDangerousEmailAccountLinking: true,
     },
   ],
   callbacks: {
