@@ -23,18 +23,29 @@ export const authConfig = {
     },
   ],
   callbacks: {
-    /** Persist the user ID in the JWT so it's available without a DB query */
-    jwt({ token, user }) {
+    /**
+     * Persist the user ID and Authentik id_token in the JWT.
+     * The id_token is needed later to perform a proper OIDC logout
+     * that also terminates the Authentik session.
+     */
+    jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
       }
+      if (account?.id_token) {
+        token.idToken = account.id_token
+      }
       return token
     },
-    /** Expose the user ID on the session object for server components */
+    /** Expose user ID, id_token, and issuer URL on the session object */
     session({ session, token }) {
       if (token.id) {
         session.user.id = token.id as string
       }
+      if (token.idToken) {
+        session.idToken = token.idToken as string
+      }
+      session.authentikIssuer = process.env.AUTH_AUTHENTIK_ISSUER
       return session
     },
   },

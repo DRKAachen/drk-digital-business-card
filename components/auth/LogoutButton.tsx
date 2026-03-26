@@ -1,13 +1,33 @@
 'use client'
 
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 
 /**
- * Logout button that ends the Auth.js session and redirects to the landing page.
+ * Logout button that ends both the Auth.js session and the Authentik
+ * OIDC session. Without the Authentik end-session redirect, the user
+ * would be silently re-authenticated on the next login attempt because
+ * Authentik's session cookie would still be valid.
  */
 export default function LogoutButton() {
-  function handleLogout() {
-    signOut({ callbackUrl: '/' })
+  const { data: session } = useSession()
+
+  async function handleLogout() {
+    const issuer = session?.authentikIssuer
+    const idToken = session?.idToken
+
+    await signOut({ redirect: false })
+
+    if (issuer && idToken) {
+      const endSessionUrl = new URL(`${issuer}end-session/`)
+      endSessionUrl.searchParams.set('id_token_hint', idToken)
+      endSessionUrl.searchParams.set(
+        'post_logout_redirect_uri',
+        window.location.origin,
+      )
+      window.location.href = endSessionUrl.toString()
+    } else {
+      window.location.href = '/'
+    }
   }
 
   return (
