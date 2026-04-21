@@ -113,10 +113,14 @@ NEXT_PUBLIC_ORG_NAME=DRK Kreisverband Aachen e.V.
 ### 4. Datenbank initialisieren
 
 ```bash
-npx prisma migrate dev
+npx prisma migrate deploy
 ```
 
-Dies erstellt alle Tabellen (Users, Accounts, Sessions, Cards, VerificationTokens) in PostgreSQL.
+Dies wendet die versionierten Migrationen aus `prisma/migrations/` auf die Datenbank an und erstellt dabei alle Tabellen (Users, Accounts, Sessions, Cards, VerificationTokens). Für neue Schema-Änderungen während der Entwicklung:
+
+```bash
+npx prisma migrate dev --name <aenderungs-name>
+```
 
 ### 5. Starten
 
@@ -161,23 +165,37 @@ Ausführliche Anleitung: [coolify.io/install](https://coolify.io/install).
 6. **Domain & SSL** konfigurieren (Let's Encrypt)
 7. **Deploy** starten
 
-### 4. Datenbank-Migration ausführen
+### 4. Datenbank-Migrationen
 
-Nach dem ersten Deploy muss die Datenbank initialisiert werden:
+Die Datenbank-Migrationen werden beim Containerstart **automatisch** ausgeführt. Der `CMD` im [Dockerfile](Dockerfile) führt `prisma migrate deploy` aus, bevor die Next.js-Anwendung gestartet wird. Für eine **leere PROD-Datenbank** (Neuinstallation) wird dadurch beim ersten Deploy das komplette Schema aus `prisma/migrations/0_init/migration.sql` angelegt – kein manueller Eingriff notwendig.
+
+#### Bestehende Datenbank ohne Migrationshistorie baselinen
+
+Falls eine vorhandene Datenbank ursprünglich mit `prisma db push` initialisiert wurde (z.B. die bestehende DEV-Datenbank aus einer früheren Version dieser App), existiert in ihr keine `_prisma_migrations`-Tabelle. Beim ersten Deploy mit aktiviertem `migrate deploy` würde Prisma versuchen, das Schema erneut anzulegen und fehlschlagen. Einmalig baselinen:
 
 ```bash
-# Im Container oder über Coolify Terminal
-npx prisma migrate deploy
+# In Coolify Terminal des App-Containers oder lokal mit gesetztem DATABASE_URL
+npx prisma migrate resolve --applied 0_init
 ```
 
-## Daten-Migration von Supabase
+Dies markiert die `0_init`-Migration als bereits angewendet. Alle künftigen Migrationen laufen dann regulär.
 
-Falls Sie von einer bestehenden Supabase-Installation migrieren:
+### 5. Erstes Deploy der PROD-Umgebung
 
-1. **Export aus Supabase**: `pg_dump --data-only --table=public.cards` via Supabase Dashboard
-2. **Import in PostgreSQL**: `psql $DATABASE_URL < cards_dump.sql` (nach `prisma migrate deploy`)
-3. **User-ID-Mapping**: Authentik vergibt neue User-IDs. Aktualisieren Sie die `user_id`-Spalte in `cards` mit den neuen Authentik-User-IDs per UPDATE-Query
-4. **Fotos**: Aus Supabase Storage herunterladen und in Garage-Bucket hochladen (gleiche Pfadstruktur)
+Checkliste für ein sauberes PROD-Deployment:
+
+1. **PostgreSQL (PROD)**: Eigene, leere Datenbank einrichten (separat von DEV). Keine manuelle Migration nötig.
+2. **Authentik (PROD)**: Eigenen OIDC Provider + Application anlegen (getrennt von DEV).
+   - Redirect URI: `https://<prod-domain>/api/auth/callback/authentik`
+   - Issuer URL in `AUTH_AUTHENTIK_ISSUER` muss exakt übereinstimmen (inkl. abschließendem Slash).
+3. **Garage (PROD)**: Eigenen Bucket anlegen, öffentlichen Lesezugriff gewähren, Access Key erzeugen. `NEXT_PUBLIC_S3_PUBLIC_URL` muss auf den öffentlich erreichbaren Bucket-URL zeigen.
+4. **`AUTH_SECRET`** neu generieren (nicht aus DEV wiederverwenden):
+   ```bash
+   openssl rand -base64 32
+   ```
+5. **Alle Environment-Variablen** aus [.env.example](.env.example) in Coolify setzen – insbesondere `NEXT_PUBLIC_SITE_URL` auf die PROD-Domain (mit `https://`).
+6. **Deploy starten**: `prisma migrate deploy` legt die Tabellen automatisch an.
+7. **Smoke-Test**: Login → Karte erstellen → veröffentlichen → QR-Code scannen → vCard herunterladen.
 
 ## Projektstruktur
 
@@ -210,7 +228,8 @@ Falls Sie von einer bestehenden Supabase-Installation migrieren:
 │   ├── photo.ts            # Foto-Validierung & URLs
 │   └── url.ts              # Site-URL Helper
 ├── prisma/
-│   └── schema.prisma       # Datenbankschema (Cards + Auth.js Tabellen)
+│   ├── schema.prisma       # Datenbankschema (Cards + Auth.js Tabellen)
+│   └── migrations/         # Versionierte SQL-Migrationen (automatisch beim Container-Start angewendet)
 ├── styles/                 # Globale SCSS Styles & Design Tokens
 ├── middleware.ts            # Auth Session Check & Route Protection
 ├── Dockerfile              # Produktions-Image für Coolify
