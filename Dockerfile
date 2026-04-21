@@ -31,20 +31,16 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# Prisma CLI + generated client + schema/migrations are needed at runtime
-# so we can run `prisma migrate deploy` automatically on container start.
-# The Next.js standalone output does not include these by default.
+# Prisma client generated artifacts are required by the running server
+# (@prisma/client loads them at runtime). The standalone trace includes
+# most things, but copying .prisma explicitly guarantees availability.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-# Apply any pending Prisma migrations against the DATABASE_URL, then start Next.
-# Safe on a brand-new empty PROD database: creates the schema from 0_init.
-# For an existing database that was initialised via `prisma db push` (no
-# _prisma_migrations table), run once manually:
-#   npx prisma migrate resolve --applied 0_init
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node server.js"]
+# The Prisma CLI is intentionally NOT included in the runtime image to keep
+# it slim. Run `npx prisma migrate deploy` from your local dev machine (or
+# a short-lived migration container) with the PROD DATABASE_URL exported.
+# See README.md section "Datenbank-Migrationen" for the full workflow.
+CMD ["node", "server.js"]
