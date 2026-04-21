@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import LoginForm from '@/components/auth/LoginForm'
+import SupportButton from '@/components/support/SupportButton'
 import styles from './page.module.scss'
 
 export const metadata = {
@@ -26,6 +27,7 @@ export default function LoginPage() {
       <nav className={styles.legalLinks} aria-label="Rechtliche Hinweise">
         <Link href="/impressum">Impressum</Link>
         <Link href="/datenschutz">Datenschutz</Link>
+        <SupportButton variant="link" />
       </nav>
     </div>
   )

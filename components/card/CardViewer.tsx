@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import type { CardRow } from '@/lib/types'
 import { getPhotoUrl } from '@/lib/photo'
+import SupportButton from '@/components/support/SupportButton'
 import styles from './CardViewer.module.scss'
 
 interface CardViewerProps {
@@ -188,6 +189,7 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
       <nav className={styles.legalLinks} aria-label="Rechtliche Hinweise">
         <a href="/impressum">Impressum</a>
         <a href="/datenschutz">Datenschutz</a>
+        <SupportButton variant="link" />
       </nav>
     </div>
   )

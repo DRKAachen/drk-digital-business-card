@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SupportButton from '@/components/support/SupportButton'
 
 export const metadata = { title: 'Impressum' }
 
@@ -77,9 +78,10 @@ export default function ImpressumPage() {
         </p>
       </div>
 
-      <footer style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e5e5', display: 'flex', gap: '1.5rem', fontSize: '0.875rem' }}>
+      <footer style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e5e5', display: 'flex', gap: '1.5rem', fontSize: '0.875rem', color: '#e30613', alignItems: 'center' }}>
         <Link href="/impressum" style={{ color: '#e30613' }}>Impressum</Link>
         <Link href="/datenschutz" style={{ color: '#e30613' }}>Datenschutz</Link>
+        <SupportButton variant="link" />
       </footer>
     </div>
   )
