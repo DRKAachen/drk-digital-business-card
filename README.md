@@ -167,24 +167,46 @@ Ausführliche Anleitung: [coolify.io/install](https://coolify.io/install).
 
 ### 4. Datenbank-Migrationen
 
-Die Datenbank-Migrationen werden beim Containerstart **automatisch** ausgeführt. Der `CMD` im [Dockerfile](Dockerfile) führt `prisma migrate deploy` aus, bevor die Next.js-Anwendung gestartet wird. Für eine **leere PROD-Datenbank** (Neuinstallation) wird dadurch beim ersten Deploy das komplette Schema aus `prisma/migrations/0_init/migration.sql` angelegt – kein manueller Eingriff notwendig.
+Das Laufzeit-Image enthält bewusst **keinen Prisma-CLI**, um schlank zu bleiben. Migrationen werden daher **manuell** von der lokalen Entwicklungsmaschine gegen die jeweilige Ziel-Datenbank ausgeführt. Die versionierten SQL-Migrationen liegen im Repository unter `prisma/migrations/`.
+
+#### Migration gegen PROD ausführen
+
+1. Repository lokal auschecken und `npm install` ausführen (nur einmalig pro Maschine).
+2. `DATABASE_URL` temporär auf die **PROD-Datenbank** setzen. Beispiel (PowerShell):
+   ```powershell
+   $env:DATABASE_URL = "postgresql://user:password@prod-db-host:5432/visitenkarte"
+   ```
+   Bash:
+   ```bash
+   export DATABASE_URL="postgresql://user:password@prod-db-host:5432/visitenkarte"
+   ```
+3. Migrationen anwenden:
+   ```bash
+   npx prisma migrate deploy
+   ```
+4. `DATABASE_URL` wieder entfernen bzw. auf den DEV-Wert zurücksetzen, damit keine versehentlichen Schreibzugriffe auf PROD erfolgen.
+
+Für eine **leere PROD-Datenbank** legt `migrate deploy` sämtliche Tabellen aus `prisma/migrations/0_init/migration.sql` an.
 
 #### Bestehende Datenbank ohne Migrationshistorie baselinen
 
-Falls eine vorhandene Datenbank ursprünglich mit `prisma db push` initialisiert wurde (z.B. die bestehende DEV-Datenbank aus einer früheren Version dieser App), existiert in ihr keine `_prisma_migrations`-Tabelle. Beim ersten Deploy mit aktiviertem `migrate deploy` würde Prisma versuchen, das Schema erneut anzulegen und fehlschlagen. Einmalig baselinen:
+Falls eine Datenbank früher mit `prisma db push` initialisiert wurde (z.B. die bestehende DEV-Datenbank aus einer Vorgängerversion), existiert in ihr keine `_prisma_migrations`-Tabelle. Beim ersten `migrate deploy` würde Prisma versuchen, das Schema erneut anzulegen und fehlschlagen. Einmalig baselinen (mit auf die jeweilige DB gesetztem `DATABASE_URL`):
 
 ```bash
-# In Coolify Terminal des App-Containers oder lokal mit gesetztem DATABASE_URL
 npx prisma migrate resolve --applied 0_init
 ```
 
 Dies markiert die `0_init`-Migration als bereits angewendet. Alle künftigen Migrationen laufen dann regulär.
 
+#### Prisma Client im Container
+
+Zur Laufzeit wird lediglich der **generierte Prisma Client** (`node_modules/.prisma/client`) benötigt; dieser wird beim Docker-Build über `npx prisma generate` erzeugt und in das Runtime-Image kopiert. Kein CLI, keine Schema-Dateien im Container.
+
 ### 5. Erstes Deploy der PROD-Umgebung
 
 Checkliste für ein sauberes PROD-Deployment:
 
-1. **PostgreSQL (PROD)**: Eigene, leere Datenbank einrichten (separat von DEV). Keine manuelle Migration nötig.
+1. **PostgreSQL (PROD)**: Eigene, leere Datenbank einrichten (separat von DEV).
 2. **Authentik (PROD)**: Eigenen OIDC Provider + Application anlegen (getrennt von DEV).
    - Redirect URI: `https://<prod-domain>/api/auth/callback/authentik`
    - Issuer URL in `AUTH_AUTHENTIK_ISSUER` muss exakt übereinstimmen (inkl. abschließendem Slash).
@@ -194,8 +216,15 @@ Checkliste für ein sauberes PROD-Deployment:
    openssl rand -base64 32
    ```
 5. **Alle Environment-Variablen** aus [.env.example](.env.example) in Coolify setzen – insbesondere `NEXT_PUBLIC_SITE_URL` auf die PROD-Domain (mit `https://`).
-6. **Deploy starten**: `prisma migrate deploy` legt die Tabellen automatisch an.
-7. **Smoke-Test**: Login → Karte erstellen → veröffentlichen → QR-Code scannen → vCard herunterladen.
+6. **Schema initialisieren** (einmalig): Lokal mit auf die PROD-DB gesetztem `DATABASE_URL`:
+   ```bash
+   npx prisma migrate deploy
+   ```
+   Siehe Abschnitt "Datenbank-Migrationen" weiter oben für Details und den Baseline-Befehl bei bestehenden Datenbanken.
+7. **Deploy starten** in Coolify.
+8. **Smoke-Test**: Login → Karte erstellen → veröffentlichen → QR-Code scannen → vCard herunterladen.
+
+Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma migrate dev --name <name>`), committen, Code deployen und **anschließend** `npx prisma migrate deploy` gegen PROD ausführen.
 
 ## Projektstruktur
 
