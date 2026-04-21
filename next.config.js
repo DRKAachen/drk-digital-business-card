@@ -1,17 +1,25 @@
 /** @type {import('next').NextConfig} */
+
+const s3PublicUrl = process.env.NEXT_PUBLIC_S3_PUBLIC_URL || ''
+let s3Hostname = ''
+try {
+  if (s3PublicUrl) s3Hostname = new URL(s3PublicUrl).hostname
+} catch { /* ignored – env not set during dev */ }
+
 const nextConfig = {
   output: 'standalone',
   sassOptions: {
     includePaths: ['./styles'],
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-    ],
+    remotePatterns: s3Hostname
+      ? [
+          {
+            protocol: 'https',
+            hostname: s3Hostname,
+          },
+        ]
+      : [],
   },
 
   /**

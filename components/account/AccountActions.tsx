@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signOut } from 'next-auth/react'
 import styles from './AccountActions.module.scss'
 
 interface AccountActionsProps {
@@ -13,20 +12,15 @@ interface AccountActionsProps {
  * Account management component providing DSGVO-compliant self-service actions:
  * - Data export (Art. 20 DSGVO – Recht auf Datenübertragbarkeit)
  * - Account deletion (Art. 17 DSGVO – Recht auf Löschung)
+ *
+ * Password management is handled by Authentik's own UI.
  */
 export default function AccountActions({ userEmail }: AccountActionsProps) {
-  const router = useRouter()
   const [showConfirm, setShowConfirm] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
-
-  const [newPassword, setNewPassword] = useState('')
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
-  const [changingPassword, setChangingPassword] = useState(false)
-  const [passwordSuccess, setPasswordSuccess] = useState(false)
-  const [passwordError, setPasswordError] = useState<string | null>(null)
 
   /** Triggers a JSON download of all personal data */
   async function handleExport() {
@@ -72,54 +66,11 @@ export default function AccountActions({ userEmail }: AccountActionsProps) {
         throw new Error(data.error || 'Löschung fehlgeschlagen.')
       }
 
-      const supabase = createClient()
-      await supabase.auth.signOut()
-
-      router.push('/')
-      router.refresh()
+      await signOut({ callbackUrl: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Löschung fehlgeschlagen.')
       setDeleting(false)
     }
-  }
-
-  /** Updates the user's password via Supabase Auth. */
-  async function handleChangePassword(e: React.FormEvent) {
-    e.preventDefault()
-    setPasswordError(null)
-    setPasswordSuccess(false)
-
-    if (newPassword.length < 8) {
-      setPasswordError('Das Passwort muss mindestens 8 Zeichen lang sein.')
-      return
-    }
-
-    if (newPassword !== newPasswordConfirm) {
-      setPasswordError('Die Passwörter stimmen nicht überein.')
-      return
-    }
-
-    setChangingPassword(true)
-    const supabase = createClient()
-
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    })
-
-    setChangingPassword(false)
-
-    if (updateError) {
-      if (updateError.message?.includes('same password')) {
-        setPasswordError('Das neue Passwort muss sich vom alten unterscheiden.')
-      } else {
-        setPasswordError('Fehler beim Ändern des Passworts. Bitte versuchen Sie es erneut.')
-      }
-      return
-    }
-
-    setPasswordSuccess(true)
-    setNewPassword('')
-    setNewPasswordConfirm('')
   }
 
   return (
@@ -131,57 +82,9 @@ export default function AccountActions({ userEmail }: AccountActionsProps) {
           <span className={styles.infoLabel}>E-Mail</span>
           <span>{userEmail}</span>
         </div>
-      </section>
-
-      {/* Change password */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Passwort ändern</h2>
-        <form onSubmit={handleChangePassword}>
-          <div className="form-field">
-            <label htmlFor="newPassword" className="form-field__label">
-              Neues Passwort
-            </label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => { setNewPassword(e.target.value); setPasswordSuccess(false) }}
-              className="form-field__input"
-              placeholder="Mindestens 8 Zeichen"
-              required
-              minLength={8}
-              autoComplete="new-password"
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="newPasswordConfirm" className="form-field__label">
-              Passwort bestätigen
-            </label>
-            <input
-              id="newPasswordConfirm"
-              type="password"
-              value={newPasswordConfirm}
-              onChange={(e) => { setNewPasswordConfirm(e.target.value); setPasswordSuccess(false) }}
-              className="form-field__input"
-              placeholder="Passwort wiederholen"
-              required
-              minLength={8}
-              autoComplete="new-password"
-            />
-          </div>
-          {passwordError && <p className={styles.errorMsg}>{passwordError}</p>}
-          {passwordSuccess && (
-            <p className={styles.successMsg}>Passwort erfolgreich geändert.</p>
-          )}
-          <button
-            type="submit"
-            disabled={changingPassword || !newPassword || !newPasswordConfirm}
-            className="btn btn--primary"
-            style={{ marginTop: '0.5rem' }}
-          >
-            {changingPassword ? 'Wird geändert...' : 'Passwort ändern'}
-          </button>
-        </form>
+        <p style={{ color: '#525252', fontSize: '0.8125rem', marginTop: '0.5rem' }}>
+          Passwort und Kontodaten können in Authentik verwaltet werden.
+        </p>
       </section>
 
       {/* Data export */}

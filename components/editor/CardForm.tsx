@@ -2,25 +2,24 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { generateSlug, isValidSlug } from '@/lib/slug'
 import { validatePhoto, ACCEPTED_PHOTO_TYPES } from '@/lib/photo'
-import type { CardRow } from '@/lib/supabase/types'
+import type { CardRow } from '@/lib/types'
 import styles from './CardForm.module.scss'
 
 interface CardFormProps {
   /** Existing card data when editing, null when creating */
   existingCard: CardRow | null
-  userId: string
 }
 
 /**
  * Card editor form supporting both create and update operations.
- * Handles all contact fields, photo upload, and slug management.
+ * Handles all contact fields, photo upload via /api/photos/upload,
+ * and card persistence via /api/cards. User identity is resolved
+ * server-side from the Auth.js session in the API routes.
  */
-export default function CardForm({ existingCard, userId }: CardFormProps) {
+export default function CardForm({ existingCard }: CardFormProps) {
   const router = useRouter()
-  const supabase = createClient()
   const isEditing = !!existingCard
 
   const [saving, setSaving] = useState(false)
@@ -57,7 +56,7 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
   /** Set initial photo preview from existing card */
   useEffect(() => {
     if (existingCard?.photo_path) {
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/photos/${existingCard.photo_path}`
+      const url = `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${existingCard.photo_path}`
       setPhotoPreview(url)
     }
   }, [existingCard?.photo_path])
@@ -70,7 +69,7 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
     }
   }, [form.first_name, form.last_name, isEditing])
 
-  /** Check slug availability (debounced) */
+  /** Check slug availability via API (debounced) */
   const checkSlugAvailability = useCallback(
     async (slug: string) => {
       if (!isValidSlug(slug)) {
@@ -82,15 +81,16 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
         return
       }
 
-      const { data } = await supabase
-        .from('cards')
-        .select('id')
-        .eq('slug', slug)
-        .maybeSingle()
+      const params = new URLSearchParams({ slug })
+      if (isEditing && existingCard?.id) {
+        params.set('excludeId', existingCard.id)
+      }
 
-      setSlugAvailable(!data)
+      const res = await fetch(`/api/cards/check-slug?${params}`)
+      const data = await res.json()
+      setSlugAvailable(data.available)
     },
-    [supabase, isEditing, existingCard?.slug],
+    [isEditing, existingCard?.slug, existingCard?.id],
   )
 
   useEffect(() => {
@@ -144,20 +144,23 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
     try {
       let photoPath = existingCard?.photo_path ?? null
 
-      // Upload photo if a new file was selected
       if (photoFile) {
-        const ext = photoFile.name.split('.').pop() || 'jpg'
-        const path = `${userId}/${form.slug}.${ext}`
+        const formData = new FormData()
+        formData.append('file', photoFile)
+        formData.append('slug', form.slug)
 
-        const { error: uploadError } = await supabase.storage
-          .from('photos')
-          .upload(path, photoFile, { upsert: true })
+        const uploadRes = await fetch('/api/photos/upload', {
+          method: 'POST',
+          body: formData,
+        })
 
-        if (uploadError) {
-          throw new Error(`Foto-Upload fehlgeschlagen: ${uploadError.message}`)
+        if (!uploadRes.ok) {
+          const data = await uploadRes.json()
+          throw new Error(data.error || 'Foto-Upload fehlgeschlagen.')
         }
 
-        photoPath = path
+        const uploadData = await uploadRes.json()
+        photoPath = uploadData.path
       }
 
       /** Ensures a URL has https:// prepended if no protocol is present */
@@ -188,24 +191,30 @@ export default function CardForm({ existingCard, userId }: CardFormProps) {
       }
 
       if (isEditing) {
-        const { error: updateError } = await supabase
-          .from('cards')
-          .update(cardData)
-          .eq('id', existingCard.id)
+        const res = await fetch('/api/cards', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: existingCard.id, ...cardData }),
+        })
 
-        if (updateError) throw new Error(updateError.message)
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'Aktualisierung fehlgeschlagen.')
+        }
+
         setSuccessMsg('Visitenkarte erfolgreich aktualisiert!')
       } else {
-        const { error: insertError } = await supabase
-          .from('cards')
-          .insert({ ...cardData, user_id: userId })
+        const res = await fetch('/api/cards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cardData),
+        })
 
-        if (insertError) {
-          if (insertError.message.includes('duplicate')) {
-            throw new Error('Dieser URL-Slug ist bereits vergeben.')
-          }
-          throw new Error(insertError.message)
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'Erstellung fehlgeschlagen.')
         }
+
         setSuccessMsg('Visitenkarte erfolgreich erstellt!')
       }
 

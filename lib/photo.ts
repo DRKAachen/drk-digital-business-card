@@ -1,11 +1,10 @@
 /**
- * Builds the public URL for a card photo stored in Supabase Storage.
- * Photos are stored in the 'photos' bucket with path: {user_id}/{slug}.ext
+ * Builds the public URL for a card photo stored in S3/Garage.
+ * Photos are stored under the key: {user_id}/{slug}.ext
  */
 export function getPhotoUrl(photoPath: string | null): string | null {
   if (!photoPath) return null
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  return `${supabaseUrl}/storage/v1/object/public/photos/${photoPath}`
+  return `${process.env.NEXT_PUBLIC_S3_PUBLIC_URL}/${photoPath}`
 }
 
 /** Maximum allowed photo file size in bytes (2 MB) */

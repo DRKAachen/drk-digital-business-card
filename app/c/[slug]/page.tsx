@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/url'
-import type { CardRow } from '@/lib/supabase/types'
+import type { CardRow } from '@/lib/types'
 import CardViewer from '@/components/card/CardViewer'
 
 interface PageProps {
@@ -15,16 +15,10 @@ interface PageProps {
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createServerSupabaseClient()
 
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .maybeSingle()
-
-  const card = data as CardRow | null
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { slug, is_published: true },
+  })
 
   if (!card) {
     return { title: 'Karte nicht gefunden' }
@@ -55,20 +49,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 /**
  * Public card viewer page.
- * Server-rendered: fetches the published card by slug from Supabase.
+ * Server-rendered: fetches the published card by slug from the database.
  */
 export default async function CardPage({ params }: PageProps) {
   const { slug } = await params
-  const supabase = await createServerSupabaseClient()
 
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .maybeSingle()
-
-  const card = data as CardRow | null
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { slug, is_published: true },
+  })
 
   if (!card) notFound()
 

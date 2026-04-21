@@ -1,0 +1,76 @@
+@use '@/styles/variables' as *;
+
+.trigger {
+  width: 100%;
+}
+
+.dialog {
+  border: none;
+  border-radius: $radius-xl;
+  padding: 0;
+  max-width: 420px;
+  width: calc(100% - $spacing-8);
+  box-shadow: $shadow-lg;
+  animation: fadeIn 150ms ease;
+
+  &::backdrop {
+    background: rgba($black, 0.5);
+    animation: fadeIn 150ms ease;
+  }
+}
+
+.content {
+  padding: $spacing-8 $spacing-6;
+  text-align: center;
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-full;
+  background: rgba($drk-red, 0.1);
+  color: $drk-red;
+  margin-bottom: $spacing-4;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  margin-bottom: $spacing-2;
+}
+
+.description {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  line-height: 1.6;
+  margin-bottom: $spacing-6;
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $drk-red;
+  margin-bottom: $spacing-4;
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-3;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -149,6 +149,17 @@ h1, h2, h3, h4 {
   }
 }
 
+.btn--danger {
+  background-color: transparent;
+  color: $drk-red;
+  border: 1px solid $drk-red;
+
+  &:hover:not(:disabled) {
+    background-color: $drk-red;
+    color: $white;
+  }
+}
+
 .btn--full {
   width: 100%;
 }

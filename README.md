@@ -9,8 +9,8 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **Kontakt speichern**: vCard 3.0 Download – ein Klick zum Speichern im Adressbuch
 - **Teilen**: Web Share API / Link kopieren
 - **Fotos**: Upload von Profilfotos (JPEG, PNG, WebP, max. 2 MB)
-- **DSGVO-konform**: EU-Hosting (Frankfurt), keine externen Dienste auf öffentlichen Seiten, kein Tracking, Security Headers
-- **Magic-Link-Login**: Passwortlose Anmeldung per E-Mail mit Datenschutzhinweis
+- **DSGVO-konform**: Self-Hosted, keine externen Dienste auf öffentlichen Seiten, kein Tracking, Security Headers
+- **SSO-Login**: Authentik (OpenID Connect) – zentrale Benutzerverwaltung
 - **Open Graph**: Rich-Link-Previews beim Teilen auf Social Media
 - **Datenexport**: JSON-Export aller persönlichen Daten (DSGVO Art. 20)
 - **Kontolöschung**: Self-Service-Löschung von Konto, Visitenkarte und Fotos (DSGVO Art. 17)
@@ -20,20 +20,21 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript, SCSS
-- **Backend**: Supabase (PostgreSQL, Auth, Storage) – EU-Region Frankfurt
-- **QR-Code**: qrcode (Canvas + SVG)
-- **Hosting**: Vercel (EU-Region Frankfurt) oder eigenes Server mit Coolify
+- **Datenbank**: PostgreSQL via Prisma ORM
+- **Authentifizierung**: Auth.js (NextAuth v5) mit Authentik OIDC Provider
+- **Dateispeicher**: Garage (S3-kompatibel) via AWS SDK
+- **Hosting**: Eigener Server mit Coolify
 
 ## DSGVO / Datenschutz
 
 Die Anwendung wurde unter Berücksichtigung der DSGVO und des TDDDG entwickelt:
 
+- **100 % Self-Hosted**: Datenbank, Dateispeicher, Authentifizierung und Hosting laufen auf eigener Infrastruktur – keine Drittanbieter-Datenverarbeitung
 - **Impressum & Datenschutzerklärung**: Vollständig ausgefüllt mit allen gesetzlich vorgeschriebenen Angaben (TMG §5, DSGVO Art. 13/14), DSB-Kontakt, Beschwerderecht (Art. 77)
 - **Keine externen Ressourcen**: System-Fonts, inline SVG-Icons, keine Google Fonts, kein CDN
 - **Keine Tracking-/Analyse-Cookies**: Nur technisch notwendige Auth-Session-Cookies (TDDDG §25 Abs. 2 Ausnahme)
 - **Einwilligungshinweise**: Datenschutzhinweis beim Login, Einwilligungsinfo bei Veröffentlichung der Visitenkarte
 - **Betroffenenrechte**: Datenexport (Art. 20) und Kontolöschung (Art. 17) als Self-Service im Dashboard
-- **Auftragsverarbeiter dokumentiert**: Supabase (AVV/DPA) und Vercel bzw. eigener Server/Coolify (kein Drittanbieter-Hosting bei Self-Hosting)
 - **Security Headers**: HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-Content-Type-Options
 - **Impressum/Datenschutz-Links**: Auf allen Seiten erreichbar (2-Klick-Regel)
 
@@ -42,7 +43,9 @@ Die Anwendung wurde unter Berücksichtigung der DSGVO und des TDDDG entwickelt:
 ### Voraussetzungen
 
 - Node.js >= 20
-- Ein Supabase-Projekt (EU-Region Frankfurt empfohlen)
+- PostgreSQL-Datenbank
+- Garage (S3-kompatibler Objektspeicher)
+- Authentik-Instanz mit OIDC-Anwendung
 
 ### 1. Repository klonen & installieren
 
@@ -52,16 +55,28 @@ cd drk-digital-business-card
 npm install
 ```
 
-### 2. Supabase einrichten
+### 2. Infrastruktur einrichten (Coolify)
 
-1. Neues Projekt auf [supabase.com](https://supabase.com) erstellen (Region: **EU Frankfurt**)
-2. SQL-Migration ausführen: Kopieren Sie den Inhalt von `supabase/migrations/001_create_cards.sql` in den Supabase SQL-Editor und führen Sie ihn aus
-3. **Authentication** konfigurieren:
-   - Unter Authentication > Providers: Email aktivieren (Magic Link)
-   - Unter Authentication > URL Configuration: Site-URL und Redirect-URLs setzen
-4. **API-Keys** erstellen:
-   - Unter Settings > API Keys: Publishable Key (`sb_publishable_...`) für den Client
-   - Unter Settings > API Keys: Secret Key (`sb_secret_...`) für serverseitige Admin-Operationen
+#### PostgreSQL
+
+Über Coolify One-Click deployen. Notieren: Host, Port, Datenbankname, Benutzer, Passwort.
+
+#### Garage (S3-kompatibler Speicher)
+
+Über Coolify deployen. Bucket `photos` mit öffentlichem Lesezugriff erstellen:
+
+```bash
+garage bucket create photos
+garage bucket allow --read --write photos --key <key-id>
+```
+
+Notieren: S3-API-Endpoint-URL, Access Key ID, Secret Key.
+
+#### Authentik (OIDC Provider)
+
+1. Neue OAuth2/OIDC-Anwendung erstellen
+2. Redirect URI setzen: `https://your-app-domain.de/api/auth/callback/authentik`
+3. Notieren: Client ID, Client Secret, Issuer URL (z.B. `https://auth.your-domain.de/application/o/visitenkarte/`)
 
 ### 3. Umgebungsvariablen
 
@@ -72,16 +87,42 @@ cp .env.example .env.local
 Datei `.env.local` ausfüllen:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://ihr-projekt.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_ihr-key
-SUPABASE_SECRET_KEY=sb_secret_ihr-key
+# PostgreSQL
+DATABASE_URL=postgresql://user:password@localhost:5432/visitenkarte
+
+# Auth.js – generieren mit: openssl rand -base64 32
+AUTH_SECRET=ihr-auth-secret
+
+# Authentik OIDC
+AUTH_AUTHENTIK_ID=ihr-client-id
+AUTH_AUTHENTIK_SECRET=ihr-client-secret
+AUTH_AUTHENTIK_ISSUER=https://auth.your-domain.de/application/o/visitenkarte/
+
+# Garage (S3)
+S3_ENDPOINT=https://garage.your-domain.de
+S3_ACCESS_KEY=ihr-access-key
+S3_SECRET_KEY=ihr-secret-key
+S3_BUCKET=photos
+NEXT_PUBLIC_S3_PUBLIC_URL=https://garage.your-domain.de/photos
+
+# App
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_ORG_NAME=DRK Kreisverband Aachen e.V.
 ```
 
-> **Hinweis:** `SUPABASE_SECRET_KEY` wird nur serverseitig für Admin-Operationen (Kontolöschung) verwendet und niemals an den Client gesendet. Verwenden Sie den neuen Secret Key (`sb_secret_...`) statt des Legacy `service_role` JWT – er bietet unabhängige Rotation und zusätzlichen Browser-Schutz.
+### 4. Datenbank initialisieren
 
-### 4. Starten
+```bash
+npx prisma migrate deploy
+```
+
+Dies wendet die versionierten Migrationen aus `prisma/migrations/` auf die Datenbank an und erstellt dabei alle Tabellen (Users, Accounts, Sessions, Cards, VerificationTokens). Für neue Schema-Änderungen während der Entwicklung:
+
+```bash
+npx prisma migrate dev --name <aenderungs-name>
+```
+
+### 5. Starten
 
 ```bash
 npm run dev
@@ -89,114 +130,109 @@ npm run dev
 
 App ist unter [http://localhost:3000](http://localhost:3000) erreichbar.
 
-## Deployment
+## Deployment (Coolify)
 
-### Option A: Eigenes Server mit Coolify (Vercel-Alternative)
-
-Coolify ist eine self-hosted Plattform für Builds, Deployments und SSL – ohne Vendor-Lock-in.
-
-#### 1. Coolify auf dem Server installieren
+### 1. Coolify auf dem Server installieren
 
 **Voraussetzungen:**
 
-- Server/VPS mit **Ubuntu 22.04+** oder **Debian 11+** (oder anderem Docker-tauglichen Linux)
+- Server/VPS mit **Ubuntu 22.04+** oder **Debian 11+**
 - Mindestens **2 vCPU, 2 GB RAM, 30 GB SSD** (Produktion: 4 vCPU, 8 GB RAM, 80+ GB SSD empfohlen)
 - Öffentliche IPv4-Adresse, Ports 80 und 443 erreichbar
 - SSH-Zugang zum Server
 
-**Installation (einzeilig):**
+**Installation:**
 
 ```bash
 curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 ```
 
-Nach dem Lauf wird die Coolify-Web-Oberfläche unter der angezeigten URL (z.B. `http://<SERVER-IP>:8000`) erreichbar sein. Beim ersten Aufruf legst du ein Admin-Passwort fest.
-
 Ausführliche Anleitung: [coolify.io/install](https://coolify.io/install).
 
-#### 2. App von Repo auf den Server bringen (über Coolify)
+### 2. Dienste deployen
 
-Du musst **nichts manuell auf den Server kopieren**. Coolify baut und startet die App aus dem Git-Repository auf dem Server.
+1. **PostgreSQL** über Coolify One-Click deployen
+2. **Garage** über Coolify deployen und Bucket konfigurieren
+3. **Authentik** über Coolify deployen und OIDC-Anwendung erstellen
 
-**Schritte in Coolify:**
+### 3. App deployen
 
-1. **Projekt anlegen**  
-   In Coolify: Neues Projekt erstellen (z.B. „DRK Visitenkarte“).
+1. **Projekt anlegen** in Coolify
+2. **Ressource hinzufügen**: Application → Git → Repository-URL → Branch `main`
+3. **Build Pack**: `Dockerfile`
+4. **Port**: `3000`
+5. **Umgebungsvariablen** eintragen (alle aus `.env.example`)
+6. **Domain & SSL** konfigurieren (Let's Encrypt)
+7. **Deploy** starten
 
-2. **Ressource hinzufügen**  
-   - „Add new resource“ → **Application**.  
-   - **Source**: Git – Repository-URL eintragen (HTTPS oder SSH).  
-   - Optional: GitHub/GitLab/Bitbucket/Gitea verbinden, dann Repo auswählen.  
-   - **Branch**: z.B. `main` oder `dev`.
+### 4. Datenbank-Migrationen
 
-3. **Build-Konfiguration**  
-   - **Build Pack**: `Dockerfile` (im Projekt-Root liegt ein `Dockerfile`).  
-   - **Ports Exposes**: `3000` (Next.js lauscht auf 3000).  
-   - Keine weiteren Pflichtfelder für den Start.
+Die Datenbank-Migrationen werden beim Containerstart **automatisch** ausgeführt. Der `CMD` im [Dockerfile](Dockerfile) führt `prisma migrate deploy` aus, bevor die Next.js-Anwendung gestartet wird. Für eine **leere PROD-Datenbank** (Neuinstallation) wird dadurch beim ersten Deploy das komplette Schema aus `prisma/migrations/0_init/migration.sql` angelegt – kein manueller Eingriff notwendig.
 
-4. **Umgebungsvariablen**  
-   Unter „Environment Variables“ alle Werte aus `.env.example` eintragen (siehe lokale Entwicklung), angepasst an Produktion:
-   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SECRET_KEY`
-   - `NEXT_PUBLIC_SITE_URL` = finale App-URL (z.B. `https://visitenkarte.drk-aachen.de`)
-   - `NEXT_PUBLIC_ORG_NAME` = euer Organisationsname
+#### Bestehende Datenbank ohne Migrationshistorie baselinen
 
-5. **Domain & SSL**  
-   - In Coolify eine **Domain** für die App eintragen (z.B. `visitenkarte.drk-aachen.de`).  
-   - Coolify kann automatisch **Let’s Encrypt SSL** einrichten (HTTPS).
+Falls eine vorhandene Datenbank ursprünglich mit `prisma db push` initialisiert wurde (z.B. die bestehende DEV-Datenbank aus einer früheren Version dieser App), existiert in ihr keine `_prisma_migrations`-Tabelle. Beim ersten Deploy mit aktiviertem `migrate deploy` würde Prisma versuchen, das Schema erneut anzulegen und fehlschlagen. Einmalig baselinen:
 
-6. **Deploy starten**  
-   „Deploy“ auslösen. Coolify cloned das Repo auf dem Server, baut das Docker-Image (mit dem bereitgestellten `Dockerfile`) und startet den Container.  
-   Danach ist die App unter der konfigurierten Domain erreichbar.
+```bash
+# In Coolify Terminal des App-Containers oder lokal mit gesetztem DATABASE_URL
+npx prisma migrate resolve --applied 0_init
+```
 
-**Supabase anpassen:**
+Dies markiert die `0_init`-Migration als bereits angewendet. Alle künftigen Migrationen laufen dann regulär.
 
-- In Supabase unter **Authentication → URL Configuration** die **Produktions-URL** (z.B. `https://visitenkarte.drk-aachen.de`) als **Site URL** und in **Redirect URLs** eintragen.
+### 5. Erstes Deploy der PROD-Umgebung
 
-**Zusammenfassung:**  
-Coolify einmal auf dem Server installieren, dann in der Coolify-UI das Git-Repo verbinden, Build Pack „Dockerfile“, Port 3000 und Umgebungsvariablen setzen. Die App wird auf dem Server aus dem Repo gebaut und betrieben – kein manuelles Kopieren von deinem Rechner nötig.
+Checkliste für ein sauberes PROD-Deployment:
 
----
-
-### Option B: Deployment (Vercel)
-
-1. Repository mit Vercel verbinden
-2. **Region auf Frankfurt (fra1) setzen** (Project Settings > Functions > Region)
-3. Umgebungsvariablen in Vercel setzen (inkl. `SUPABASE_SECRET_KEY`)
-4. `NEXT_PUBLIC_SITE_URL` auf die Produktions-URL setzen (z.B. `https://visitenkarte.drk-aachen.de`)
-5. In Supabase die Produktions-URL als Redirect-URL hinzufügen
-6. **DPAs unterzeichnen**: Supabase DPA (Dashboard > Settings > Legal) und Vercel DPA (in ToS enthalten)
+1. **PostgreSQL (PROD)**: Eigene, leere Datenbank einrichten (separat von DEV). Keine manuelle Migration nötig.
+2. **Authentik (PROD)**: Eigenen OIDC Provider + Application anlegen (getrennt von DEV).
+   - Redirect URI: `https://<prod-domain>/api/auth/callback/authentik`
+   - Issuer URL in `AUTH_AUTHENTIK_ISSUER` muss exakt übereinstimmen (inkl. abschließendem Slash).
+3. **Garage (PROD)**: Eigenen Bucket anlegen, öffentlichen Lesezugriff gewähren, Access Key erzeugen. `NEXT_PUBLIC_S3_PUBLIC_URL` muss auf den öffentlich erreichbaren Bucket-URL zeigen.
+4. **`AUTH_SECRET`** neu generieren (nicht aus DEV wiederverwenden):
+   ```bash
+   openssl rand -base64 32
+   ```
+5. **Alle Environment-Variablen** aus [.env.example](.env.example) in Coolify setzen – insbesondere `NEXT_PUBLIC_SITE_URL` auf die PROD-Domain (mit `https://`).
+6. **Deploy starten**: `prisma migrate deploy` legt die Tabellen automatisch an.
+7. **Smoke-Test**: Login → Karte erstellen → veröffentlichen → QR-Code scannen → vCard herunterladen.
 
 ## Projektstruktur
 
 ```
 ├── app/                    # Next.js App Router Seiten
-│   ├── api/account/        # Server-side API-Routen
-│   │   ├── delete/         # Kontolöschung (DSGVO Art. 17)
-│   │   └── export/         # Datenexport (DSGVO Art. 20)
-│   ├── c/[slug]/           # Öffentliche Visitenkarten-Seite
-│   │   └── vcard/          # vCard Download API
-│   ├── dashboard/          # Geschützter Bereich
-│   │   ├── edit/           # Visitenkarte bearbeiten
-│   │   ├── qr/             # QR-Code exportieren
-│   │   └── settings/       # Konto & Datenschutz (Export, Löschung)
-│   ├── login/              # Magic-Link Login
+│   ├── api/
+│   │   ├── account/        # Kontolöschung (DSGVO Art. 17), Datenexport (Art. 20)
+│   │   ├── auth/           # Auth.js Route Handler (Sign-In, Callback, etc.)
+│   │   ├── cards/          # Visitenkarten CRUD + Slug-Prüfung
+│   │   └── photos/         # Foto-Upload zu S3/Garage
+│   ├── c/[slug]/           # Öffentliche Visitenkarten-Seite + vCard + OG Image
+│   ├── dashboard/          # Geschützter Bereich (Übersicht, Editor, QR, Konto)
+│   ├── login/              # Authentik OIDC Login
 │   ├── datenschutz/        # Datenschutzerklärung
 │   └── impressum/          # Impressum
 ├── components/             # React-Komponenten
 │   ├── account/            # Kontoverwaltung (Export, Löschung)
-│   ├── auth/               # Login, Logout
+│   ├── auth/               # Login (Authentik), Logout
 │   ├── card/               # Öffentliche Kartenansicht
 │   ├── editor/             # Kartenformular
 │   └── qr/                 # QR-Code Generierung & Export
 ├── lib/                    # Shared Libraries
-│   ├── supabase/           # Client, Server, Admin, Types
+│   ├── auth.config.ts      # Edge-kompatible Auth.js Konfiguration
+│   ├── auth.ts             # Auth.js mit Prisma Adapter
+│   ├── db.ts               # Prisma Client Singleton
+│   ├── storage.ts          # S3/Garage Upload/Delete
+│   ├── types.ts            # Typ-Aliase (CardRow)
 │   ├── vcard.ts            # vCard 3.0 Generator
 │   ├── slug.ts             # URL-Slug Generierung
-│   └── photo.ts            # Foto-Validierung & URLs
+│   ├── photo.ts            # Foto-Validierung & URLs
+│   └── url.ts              # Site-URL Helper
+├── prisma/
+│   ├── schema.prisma       # Datenbankschema (Cards + Auth.js Tabellen)
+│   └── migrations/         # Versionierte SQL-Migrationen (automatisch beim Container-Start angewendet)
 ├── styles/                 # Globale SCSS Styles & Design Tokens
-├── supabase/migrations/    # SQL-Migrationen
-├── middleware.ts            # Auth Session Refresh & Route Protection
-├── Dockerfile               # Produktions-Image für Coolify/eigenen Server
+├── middleware.ts            # Auth Session Check & Route Protection
+├── Dockerfile              # Produktions-Image für Coolify
 ├── .dockerignore            # Ausschlüsse für Docker-Build
 └── public/                 # Statische Assets (DRK Logo, Favicon)
 ```
@@ -207,14 +243,12 @@ Coolify einmal auf dem Server installieren, dann in der Coolify-UI das Git-Repo 
 2. Impressum in `app/impressum/page.tsx` mit eigenen Organisationsdaten füllen
 3. Datenschutzerklärung in `app/datenschutz/page.tsx` anpassen (Verantwortlicher, DSB, Aufsichtsbehörde)
 4. Optional: Logo in `public/drk-logo.svg` und `public/favicon.svg` austauschen
-5. Eigenes Supabase-Projekt erstellen und konfigurieren (EU-Region!)
+5. Eigene Infrastruktur aufsetzen (PostgreSQL, Garage, Authentik)
 
 ## Rechtliches
 
 - **Impressum**: Befüllt mit Angaben des DRK-Kreisverband Städteregion Aachen e.V. (TMG §5, MStV §18)
-- **Datenschutzerklärung**: 13 Abschnitte inkl. Verantwortlicher, DSB, Auftragsverarbeiter, Betroffenenrechte, Beschwerderecht
-- **Supabase DPA**: Auftragsverarbeitungsvereinbarung erforderlich (Dashboard > Settings > Legal)
-- **Vercel DPA** (nur bei Vercel-Hosting): In den allgemeinen Geschäftsbedingungen enthalten, inkl. EU-Standardvertragsklauseln (SCCs). Bei Self-Hosting mit Coolify entfällt Vercel.
+- **Datenschutzerklärung**: Abschnitte inkl. Verantwortlicher, DSB, Betroffenenrechte, Beschwerderecht – angepasst an Self-Hosting (keine Drittanbieter-Auftragsverarbeiter)
 
 ## Lizenz
 

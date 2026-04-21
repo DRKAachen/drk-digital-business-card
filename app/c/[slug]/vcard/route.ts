@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db'
 import { generateVCard } from '@/lib/vcard'
 import { getPhotoUrl } from '@/lib/photo'
-import type { CardRow } from '@/lib/supabase/types'
+import type { CardRow } from '@/lib/types'
 
 interface RouteContext {
   params: Promise<{ slug: string }>
@@ -14,16 +14,10 @@ interface RouteContext {
  */
 export async function GET(_request: Request, context: RouteContext) {
   const { slug } = await context.params
-  const supabase = await createServerSupabaseClient()
 
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .maybeSingle()
-
-  const card = data as CardRow | null
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { slug, is_published: true },
+  })
 
   if (!card) {
     return NextResponse.json({ error: 'Card not found' }, { status: 404 })

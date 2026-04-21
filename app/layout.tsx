@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import SessionProvider from '@/components/providers/SessionProvider'
 import '@/styles/globals.scss'
 
 const orgName = process.env.NEXT_PUBLIC_ORG_NAME || 'Deutsches Rotes Kreuz'
@@ -24,10 +25,12 @@ export default function RootLayout({
   return (
     <html lang="de">
       <body>
-        <a href="#main-content" className="sr-only">
-          Zum Inhalt springen
-        </a>
-        <main id="main-content">{children}</main>
+        <SessionProvider>
+          <a href="#main-content" className="sr-only">
+            Zum Inhalt springen
+          </a>
+          <main id="main-content">{children}</main>
+        </SessionProvider>
       </body>
     </html>
   )

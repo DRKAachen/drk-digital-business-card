@@ -67,54 +67,33 @@ export default function DatenschutzPage() {
         </p>
 
         {/* --- 5. Datenspeicherung & Auftragsverarbeiter --- */}
-        <h2 style={h2Style}>5. Datenspeicherung und Auftragsverarbeiter</h2>
+        <h2 style={h2Style}>5. Datenspeicherung und Hosting</h2>
 
         <h3 style={{ fontSize: '1.05rem', marginTop: '1.25rem', marginBottom: '0.25rem', color: '#171717' }}>
-          5.1 Supabase (Datenbank, Authentifizierung, Dateispeicher)
+          5.1 Eigene Infrastruktur (Datenbank, Dateispeicher, Hosting)
         </h3>
         <p>
-          Alle Visitenkarten-Daten, Benutzerkonten und hochgeladene Fotos werden bei
-          Supabase Inc. gespeichert. Die Datenbank und der Dateispeicher befinden sich auf
-          AWS-Infrastruktur in der Region EU Frankfurt (eu-central-1). Mit Supabase besteht
-          eine Auftragsverarbeitungsvereinbarung (AVV/DPA) gemäß Art. 28 DSGVO.
-        </p>
-        <p style={{ marginTop: '0.5rem' }}>
-          Supabase versendet zudem die Magic-Link-Anmelde-E-Mails. Dabei wird Ihre
-          E-Mail-Adresse verarbeitet.
-        </p>
-        <p style={{ marginTop: '0.5rem' }}>
-          Weitere Informationen:{' '}
-          <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#e30613' }}>
-            supabase.com/privacy
-          </a>
+          Alle Visitenkarten-Daten, Benutzerkonten und hochgeladene Fotos werden auf
+          eigenen Servern des Verantwortlichen gespeichert. Die Datenbank (PostgreSQL),
+          der Dateispeicher (Garage/S3-kompatibel) und die Webanwendung laufen auf einem
+          eigenen Server in Deutschland. Es findet keine Übermittlung an Drittanbieter statt.
         </p>
 
         <h3 style={{ fontSize: '1.05rem', marginTop: '1.25rem', marginBottom: '0.25rem', color: '#171717' }}>
-          5.2 Vercel (Hosting)
+          5.2 Authentik (Authentifizierung)
         </h3>
         <p>
-          Diese Anwendung wird auf der Plattform Vercel Inc. gehostet. Die serverseitigen
-          Funktionen laufen in der EU-Region Frankfurt. Vercel verarbeitet dabei technische
-          Daten (IP-Adresse, HTTP-Header) zur Auslieferung der Webseite. Das globale
-          Content-Delivery-Network (CDN) von Vercel kann statische Inhalte auch über
-          Server außerhalb der EU ausliefern.
-        </p>
-        <p style={{ marginTop: '0.5rem' }}>
-          Mit Vercel besteht eine Auftragsverarbeitungsvereinbarung (DPA) inkl.
-          EU-Standardvertragsklauseln (SCCs) für internationale Datenübermittlungen.
-        </p>
-        <p style={{ marginTop: '0.5rem' }}>
-          Weitere Informationen:{' '}
-          <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#e30613' }}>
-            vercel.com/legal/privacy-policy
-          </a>
+          Die Benutzeranmeldung erfolgt über eine selbst gehostete Authentik-Instanz
+          (OpenID Connect). Dabei werden Ihre E-Mail-Adresse und Ihr Name verarbeitet.
+          Die Authentik-Instanz läuft auf eigener Infrastruktur des Verantwortlichen
+          in Deutschland.
         </p>
 
         {/* --- 6. Cookies --- */}
         <h2 style={h2Style}>6. Cookies</h2>
         <p>
           Diese Anwendung verwendet ausschließlich technisch notwendige Cookies für die
-          Authentifizierung (Supabase-Session-Cookie). Diese Cookies sind für den Betrieb
+          Authentifizierung (Auth.js-Session-Cookie). Diese Cookies sind für den Betrieb
           der Anwendung erforderlich und werden nach Ende der Sitzung oder bei Abmeldung gelöscht.
         </p>
         <p style={{ marginTop: '0.75rem' }}>

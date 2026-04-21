@@ -1,9 +1,7 @@
 import { ImageResponse } from 'next/og'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db'
 import { getPhotoUrl } from '@/lib/photo'
-import type { CardRow } from '@/lib/supabase/types'
-
-export const runtime = 'edge'
+import type { CardRow } from '@/lib/types'
 
 /**
  * Dynamically generates an Open Graph image (1200x630) for a card.
@@ -15,16 +13,10 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params
-  const supabase = await createServerSupabaseClient()
 
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .maybeSingle()
-
-  const card = data as CardRow | null
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { slug, is_published: true },
+  })
 
   if (!card) {
     return new Response('Not found', { status: 404 })

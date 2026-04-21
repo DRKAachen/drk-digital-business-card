@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { CardRow } from '@/lib/supabase/types'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import type { CardRow } from '@/lib/types'
 import CardForm from '@/components/editor/CardForm'
 
 export const metadata = {
@@ -9,24 +9,16 @@ export const metadata = {
 }
 
 /**
- * Editor page: fetches the user's existing card (if any) from Supabase
+ * Editor page: fetches the user's existing card (if any) from the database
  * and renders the CardForm for create or update.
- * User ID comes from middleware header (already validated with getUser()).
  */
 export default async function EditPage() {
-  const headerStore = await headers()
-  const userId = headerStore.get('x-user-id')
-  if (!userId) redirect('/login')
+  const session = await auth()
+  if (!session?.user?.id) redirect('/login')
 
-  const supabase = await createServerSupabaseClient()
-
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle()
-
-  const card = data as CardRow | null
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { user_id: session.user.id },
+  })
 
   return (
     <div>
@@ -38,7 +30,7 @@ export default async function EditPage() {
           ? 'Ändern Sie Ihre Kontaktdaten und speichern Sie die Änderungen.'
           : 'Füllen Sie Ihre Kontaktdaten aus, um Ihre digitale Visitenkarte zu erstellen.'}
       </p>
-      <CardForm existingCard={card} userId={userId} />
+      <CardForm existingCard={card} />
     </div>
   )
 }
