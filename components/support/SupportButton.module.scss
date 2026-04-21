@@ -1,0 +1,62 @@
+@use '@/styles/variables' as *;
+
+/*
+ * Primary variant — small pill button in DRK red.
+ * Used in prominent positions like the dashboard header.
+ */
+.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-4;
+  background: $drk-red;
+  color: $white;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color $transition-fast, transform $transition-fast, box-shadow $transition-fast;
+
+  &:hover {
+    background: $drk-red-dark;
+    transform: translateY(-1px);
+    box-shadow: $shadow-sm;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
+/*
+ * Link variant — subdued text link with a small inline icon.
+ * Used in footers, legal pages and anywhere a button would be visually
+ * too heavy. Inherits color from the surrounding text unless overridden
+ * by the parent's hover rules (e.g. the dashboard footer hover turns it red).
+ */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-1;
+  color: inherit;
+  font-size: inherit;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $drk-red;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+}

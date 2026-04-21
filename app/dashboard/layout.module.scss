@@ -52,11 +52,13 @@
   }
 }
 
-.desktopLogout {
+.desktopActions {
   display: none;
+  align-items: center;
+  gap: $spacing-3;
 
   @media (min-width: $breakpoint-md) {
-    display: block;
+    display: flex;
   }
 }
 

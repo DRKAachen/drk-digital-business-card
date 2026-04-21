@@ -3,6 +3,7 @@ import Image from 'next/image'
 import styles from './layout.module.scss'
 import LogoutButton from '@/components/auth/LogoutButton'
 import MobileMenu from '@/components/nav/MobileMenu'
+import SupportButton from '@/components/support/SupportButton'
 
 /**
  * Dashboard layout wraps all authenticated pages.
@@ -36,7 +37,8 @@ export default function DashboardLayout({
               Konto
             </Link>
           </nav>
-          <div className={styles.desktopLogout}>
+          <div className={styles.desktopActions}>
+            <SupportButton variant="primary" />
             <LogoutButton />
           </div>
           <MobileMenu />
@@ -46,6 +48,7 @@ export default function DashboardLayout({
       <footer className={styles.footer}>
         <Link href="/impressum">Impressum</Link>
         <Link href="/datenschutz">Datenschutz</Link>
+        <SupportButton variant="link" />
       </footer>
     </div>
   )

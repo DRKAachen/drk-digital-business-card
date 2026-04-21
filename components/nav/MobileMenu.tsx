@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import LogoutButton from '@/components/auth/LogoutButton'
+import SupportButton from '@/components/support/SupportButton'
 import styles from './MobileMenu.module.scss'
 
 const NAV_ITEMS = [
@@ -59,6 +60,7 @@ export default function MobileMenu() {
           </Link>
         ))}
         <div className={styles.menuFooter}>
+          <SupportButton variant="primary" className={styles.menuSupport} />
           <LogoutButton />
         </div>
       </nav>

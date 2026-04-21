@@ -16,6 +16,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **Kontolöschung**: Self-Service-Löschung von Konto, Visitenkarte und Fotos (DSGVO Art. 17)
 - **Responsive Dashboard**: Icons in Aktions-Buttons, responsive Grid-Layout, Hamburger-Menü für Mobilgeräte
 - **Visitenkarten-Design**: DRK-Blau-Header (#002d55), Outline-Icons, klickbare Kontaktzeilen mit Hover-Feedback
+- **Support-Button**: `mailto:`-Link an `digitalisierung@drk-aachen.de` mit vorausgefülltem Betreff (inkl. kurzer Referenz-ID) und Body (Ref-ID, Zeitstempel, Seite, angemeldete E-Mail). Kein Backend, kein SMTP-Relay – der Mailversand erfolgt aus der Mail-App des Nutzers selbst, damit DSGVO-neutral
 
 ## Tech Stack
 
@@ -245,7 +246,8 @@ Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma mi
 │   ├── auth/               # Login (Authentik), Logout
 │   ├── card/               # Öffentliche Kartenansicht
 │   ├── editor/             # Kartenformular
-│   └── qr/                 # QR-Code Generierung & Export
+│   ├── qr/                 # QR-Code Generierung & Export
+│   └── support/            # Support-Button (mailto: an digitalisierung@drk-aachen.de)
 ├── lib/                    # Shared Libraries
 │   ├── auth.config.ts      # Edge-kompatible Auth.js Konfiguration
 │   ├── auth.ts             # Auth.js mit Prisma Adapter
@@ -255,6 +257,7 @@ Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma mi
 │   ├── vcard.ts            # vCard 3.0 Generator
 │   ├── slug.ts             # URL-Slug Generierung
 │   ├── photo.ts            # Foto-Validierung & URLs
+│   ├── support.ts          # Support-Mailto: Empfängeradresse, Ref-ID, Body-Template
 │   └── url.ts              # Site-URL Helper
 ├── prisma/
 │   ├── schema.prisma       # Datenbankschema (Cards + Auth.js Tabellen)
@@ -273,6 +276,18 @@ Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma mi
 3. Datenschutzerklärung in `app/datenschutz/page.tsx` anpassen (Verantwortlicher, DSB, Aufsichtsbehörde)
 4. Optional: Logo in `public/drk-logo.svg` und `public/favicon.svg` austauschen
 5. Eigene Infrastruktur aufsetzen (PostgreSQL, Garage, Authentik)
+
+## Support
+
+Der Support-Button im Header (Dashboard), in allen Footern (Login, Impressum, Datenschutz, öffentliche Karte) und im Hamburger-Menü öffnet die Mail-App des Nutzers mit einem vorausgefüllten `mailto:`-Link:
+
+- **Empfänger**: `digitalisierung@drk-aachen.de` (in [lib/support.ts](lib/support.ts) definiert)
+- **Betreff**: `Support Anfrage DRK Visitenkarte [Ref: <id>]` – die Referenz-ID ist ein clientseitig erzeugter 8-stelliger Base36-String, eindeutig pro Klick
+- **Body**: Platzhalter für die Nachricht des Nutzers plus Technikblock mit Ref-ID, Zeitstempel, Seite und (falls angemeldet) E-Mail – der Nutzer kann alles vor dem Versand ändern
+
+Kein Backend, kein SMTP-Relay, keine serverseitige Verarbeitung – damit DSGVO-neutral, da der Nutzer die Mail selbst mit der eigenen Mail-App versendet.
+
+**Umstieg auf Ticketsystem**: Später soll dies durch ein echtes Ticketsystem ersetzt werden. Der Umstieg erfolgt durch Austausch von [lib/support.ts](lib/support.ts) und [components/support/SupportButton.tsx](components/support/SupportButton.tsx). Alle Insertion-Points bleiben identisch.
 
 ## Rechtliches
 
