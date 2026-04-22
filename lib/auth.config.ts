@@ -16,6 +16,45 @@ export const authConfig = {
     // instead of the stock Auth.js UI.
     error: '/login/error',
   },
+  cookies: {
+    /*
+     * Extend the PKCE code_verifier cookie lifetime from the Auth.js v5
+     * default of 15 minutes to 30 minutes.
+     *
+     * Reason: during Authentik's email verification / enrollment flow
+     * users routinely leave the page to open their inbox and click the
+     * confirmation link. On slower mail servers or distracted users this
+     * regularly exceeds 15 minutes, which then manifests as
+     * `InvalidCheck: pkceCodeVerifier value could not be parsed` and a
+     * `?error=Configuration` redirect on the callback.
+     *
+     * 30 minutes is a pragmatic trade-off: long enough to cover realistic
+     * "I'll check my mail real quick" pauses, short enough that a stale
+     * code_verifier cookie does not linger across days. The cookie is
+     * still deleted on successful sign-in, so the longer TTL only
+     * matters for in-flight / abandoned sign-ins.
+     *
+     * We deliberately override ONLY `maxAge`. Auth.js v5 deep-merges
+     * partial `cookies.*.options` onto its defaults (see
+     * `@auth/core/lib/init.ts`), so httpOnly, sameSite: 'lax', path: '/'
+     * and the automatic `secure` / `__Secure-` prefix handling (true on
+     * HTTPS, false on http://localhost) all stay active unchanged.
+     *
+     * The `state` cookie has the same 15-minute default and the same
+     * failure mode, so extend it to 30 minutes for symmetry — Authentik
+     * uses it in the same PKCE + OIDC round-trip.
+     */
+    pkceCodeVerifier: {
+      options: {
+        maxAge: 60 * 30,
+      },
+    },
+    state: {
+      options: {
+        maxAge: 60 * 30,
+      },
+    },
+  },
   providers: [
     {
       id: 'authentik',
