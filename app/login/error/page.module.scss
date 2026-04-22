@@ -1,0 +1,102 @@
+@use '@/styles/variables' as *;
+
+/*
+ * Visual styles for the Auth.js error landing page.
+ * Mirrors `app/login/page.module.scss` so the user stays in a familiar
+ * layout (same card, same logo placement). The subtle differences:
+ *  - slightly wider card to fit the longer German explanation,
+ *  - `.actions` column for the retry button + back link,
+ *  - `.technical` small greyed-out fine print with the raw error code.
+ */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-4;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $spacing-8;
+  background: $white;
+  border-radius: $radius-xl;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-md;
+  width: 100%;
+  max-width: 500px;
+}
+
+.logo {
+  margin-bottom: $spacing-6;
+}
+
+.title {
+  font-size: $font-size-2xl;
+  margin-bottom: $spacing-3;
+  color: $drk-red;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  margin-bottom: $spacing-6;
+  max-width: 380px;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $spacing-3;
+  width: 100%;
+}
+
+.backLink {
+  display: inline-block;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $gray-600;
+  padding: $spacing-2;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $drk-red;
+  }
+}
+
+.technical {
+  margin-top: $spacing-6;
+  font-size: $font-size-xs;
+  color: $gray-400;
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: $gray-100;
+    padding: 0 $spacing-1;
+    border-radius: $radius-sm;
+    color: $gray-600;
+  }
+}
+
+.legalLinks {
+  display: flex;
+  gap: $spacing-6;
+  margin-top: $spacing-6;
+  font-size: $font-size-sm;
+  align-items: center;
+
+  a {
+    color: $gray-400;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $drk-red;
+    }
+  }
+}
