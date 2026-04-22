@@ -13,6 +13,13 @@ export const MAX_PHOTO_SIZE = 2 * 1024 * 1024
 /** Accepted photo MIME types */
 export const ACCEPTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
+/** Maps allowed photo MIME types to their canonical file extensions. */
+const PHOTO_EXTENSIONS: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+}
+
 /**
  * Validates a photo file before upload.
  * Returns an error message or null if valid.
@@ -25,4 +32,9 @@ export function validatePhoto(file: File): string | null {
     return 'Das Foto darf maximal 2 MB groß sein.'
   }
   return null
+}
+
+/** Returns the canonical file extension for an accepted photo MIME type. */
+export function getPhotoExtension(mimeType: string): string {
+  return PHOTO_EXTENSIONS[mimeType] || 'jpg'
 }

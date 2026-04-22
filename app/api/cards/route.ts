@@ -69,6 +69,14 @@ export async function PATCH(request: NextRequest) {
       data,
     })
 
+    if (
+      typeof data.photo_path === 'string' &&
+      existing.photo_path &&
+      data.photo_path !== existing.photo_path
+    ) {
+      await deletePhoto(existing.photo_path)
+    }
+
     return NextResponse.json(updated)
   } catch (err: unknown) {
     const prismaErr = err as { code?: string }

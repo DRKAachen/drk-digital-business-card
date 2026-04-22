@@ -8,7 +8,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **QR-Code**: Generierung mit DRK-Logo, Download als PNG (Druck) oder SVG (Vektor)
 - **Kontakt speichern**: vCard 3.0 Download – ein Klick zum Speichern im Adressbuch
 - **Teilen**: Web Share API / Link kopieren
-- **Fotos**: Upload von Profilfotos (JPEG, PNG, WebP, max. 2 MB)
+- **Fotos**: Upload von Profilfotos (JPEG, PNG, WebP) mit clientseitigem Quadrat-Crop sowie automatischer Optimierung vor dem Upload; finale Upload-Datei bleibt auf max. 2 MB begrenzt
 - **DSGVO-konform**: Self-Hosted, keine externen Dienste auf öffentlichen Seiten, kein Tracking, Security Headers
 - **SSO-Login**: Authentik (OpenID Connect) – zentrale Benutzerverwaltung
 - **Open Graph**: Rich-Link-Previews beim Teilen auf Social Media
@@ -256,7 +256,8 @@ Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma mi
 │   ├── types.ts            # Typ-Aliase (CardRow)
 │   ├── vcard.ts            # vCard 3.0 Generator
 │   ├── slug.ts             # URL-Slug Generierung
-│   ├── photo.ts            # Foto-Validierung & URLs
+│   ├── photo.ts            # Foto-Validierung, MIME-Handling & URLs
+│   ├── photo-client.ts     # Clientseitiges Crop/Resize/Komprimieren von Profilfotos
 │   ├── support.ts          # Support-Mailto: Empfängeradresse, Ref-ID, Body-Template
 │   └── url.ts              # Site-URL Helper
 ├── prisma/
