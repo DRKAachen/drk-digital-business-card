@@ -11,6 +11,10 @@ export const authConfig = {
   trustHost: true,
   pages: {
     signIn: '/login',
+    // Custom error page. Auth.js appends ?error=<Code> when routing here,
+    // so the page can show a friendly German message and a retry button
+    // instead of the stock Auth.js UI.
+    error: '/login/error',
   },
   providers: [
     {
