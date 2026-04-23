@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateSlug, isValidSlug } from '@/lib/slug'
-import { validatePhoto, ACCEPTED_PHOTO_TYPES } from '@/lib/photo'
+import { validatePhoto, ACCEPTED_PHOTO_TYPES, getPhotoExtension } from '@/lib/photo'
 import {
   validateSourcePhoto,
   createOptimizedPhotoFile,
@@ -62,6 +62,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
   const [photoSourceUrl, setPhotoSourceUrl] = useState<string | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
   const [photoProcessing, setPhotoProcessing] = useState(false)
+  const [photoLoading, setPhotoLoading] = useState(false)
 
   /** Set initial photo preview from existing card */
   useEffect(() => {
@@ -157,6 +158,55 @@ export default function CardForm({ existingCard }: CardFormProps) {
     setPhotoSourceFile(file)
     setPhotoSourceUrl(URL.createObjectURL(file))
     setCropOpen(true)
+  }
+
+  /** Reopens the crop flow either from the unsaved local photo or the stored photo. */
+  async function handlePhotoEdit() {
+    setPhotoError(null)
+
+    if (photoFile) {
+      setPhotoSourceFile(photoFile)
+      setPhotoSourceUrl(URL.createObjectURL(photoFile))
+      setCropOpen(true)
+      return
+    }
+
+    if (!existingCard?.photo_path) return
+
+    setPhotoLoading(true)
+
+    try {
+      const response = await fetch(
+        `/api/photos/source?path=${encodeURIComponent(existingCard.photo_path)}`,
+      )
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Foto konnte nicht geladen werden.')
+      }
+
+      const blob = await response.blob()
+      const mimeType = blob.type || 'image/jpeg'
+      const extension = getPhotoExtension(mimeType)
+      const fileName = existingCard.photo_path.split('/').pop() || `profilfoto.${extension}`
+      const sourceFile = new File([blob], fileName, {
+        type: mimeType,
+        lastModified: Date.now(),
+      })
+
+      const validationError = validateSourcePhoto(sourceFile)
+      if (validationError) {
+        throw new Error(validationError)
+      }
+
+      setPhotoSourceFile(sourceFile)
+      setPhotoSourceUrl(URL.createObjectURL(sourceFile))
+      setCropOpen(true)
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Foto konnte nicht geladen werden.')
+    } finally {
+      setPhotoLoading(false)
+    }
   }
 
   /** Cancels cropping and discards the temporary source image. */
@@ -321,9 +371,21 @@ export default function CardForm({ existingCard }: CardFormProps) {
           )}
         </div>
         <div>
-          <label htmlFor="photo" className="btn btn--secondary" style={{ cursor: 'pointer' }}>
-            Foto auswählen
-          </label>
+          <div className={styles.photoActions}>
+            <label htmlFor="photo" className="btn btn--secondary" style={{ cursor: 'pointer' }}>
+              Foto auswählen
+            </label>
+            {photoPreview && (
+              <button
+                type="button"
+                className="btn btn--secondary"
+                onClick={handlePhotoEdit}
+                disabled={photoProcessing || photoLoading}
+              >
+                Foto bearbeiten
+              </button>
+            )}
+          </div>
           <input
             id="photo"
             type="file"
@@ -332,6 +394,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
             className="sr-only"
           />
           <p className={styles.photoHint}>JPEG, PNG oder WebP</p>
+          {photoLoading && <p className={styles.photoStatus}>Foto wird geladen...</p>}
           {photoProcessing && <p className={styles.photoStatus}>Foto wird optimiert...</p>}
           {photoError && <p className="form-field__error">{photoError}</p>}
         </div>
@@ -536,7 +599,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
       <button
         type="submit"
         className="btn btn--primary btn--full"
-        disabled={saving || photoProcessing || slugAvailable === false}
+        disabled={saving || photoLoading || photoProcessing || slugAvailable === false}
       >
         {saving
           ? 'Wird gespeichert...'

@@ -45,6 +45,12 @@
   margin-top: $spacing-2;
 }
 
+.photoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-3;
+}
+
 .photoStatus {
   font-size: $font-size-sm;
   color: $gray-600;
