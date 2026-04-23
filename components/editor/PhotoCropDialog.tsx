@@ -98,7 +98,7 @@ export default function PhotoCropDialog({
               zoom={zoom}
               aspect={1}
               cropShape="rect"
-              showGrid={false}
+              showGrid
               objectFit="cover"
               onCropChange={setCrop}
               onZoomChange={setZoom}
