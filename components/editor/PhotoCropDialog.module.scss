@@ -1,0 +1,77 @@
+@use '@/styles/variables' as *;
+
+.dialog {
+  border: none;
+  border-radius: $radius-xl;
+  padding: 0;
+  max-width: 720px;
+  width: min(calc(100% - $spacing-8), 720px);
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+  margin: auto;
+
+  &::backdrop {
+    background: rgba($black, 0.5);
+  }
+}
+
+.content {
+  padding: $spacing-6;
+  background: $white;
+}
+
+.header {
+  margin-bottom: $spacing-4;
+}
+
+.title {
+  font-size: $font-size-xl;
+  margin-bottom: $spacing-2;
+}
+
+.description {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  line-height: 1.6;
+}
+
+.cropArea {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: $gray-900;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  margin: auto;
+  margin-bottom: $spacing-4;
+
+  @media (min-width: $breakpoint-sm) {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+.controls {
+  display: grid;
+  gap: $spacing-2;
+  margin-bottom: $spacing-5;
+}
+
+.zoomLabel {
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $gray-600;
+}
+
+.zoomSlider {
+  width: 100%;
+  accent-color: $drk-red;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-3;
+  flex-wrap: wrap;
+}
+
+

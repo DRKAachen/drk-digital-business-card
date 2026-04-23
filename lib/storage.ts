@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   ListObjectsV2Command,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3'
 
 /**
@@ -65,6 +66,30 @@ export async function deleteUserPhotos(userId: string): Promise<void> {
         await deletePhoto(obj.Key)
       }
     }
+  }
+}
+
+/** Loads a stored photo by key so it can be re-used in authenticated flows. */
+export async function getPhoto(key: string): Promise<{
+  body: Buffer
+  contentType: string
+}> {
+  const response = await s3.send(
+    new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+    }),
+  )
+
+  if (!response.Body) {
+    throw new Error('Foto nicht gefunden.')
+  }
+
+  const bytes = await response.Body.transformToByteArray()
+
+  return {
+    body: Buffer.from(bytes),
+    contentType: response.ContentType || 'image/jpeg',
   }
 }
 

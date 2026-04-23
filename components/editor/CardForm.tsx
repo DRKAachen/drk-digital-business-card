@@ -3,8 +3,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateSlug, isValidSlug } from '@/lib/slug'
-import { validatePhoto, ACCEPTED_PHOTO_TYPES } from '@/lib/photo'
+import { validatePhoto, ACCEPTED_PHOTO_TYPES, getPhotoExtension } from '@/lib/photo'
+import {
+  validateSourcePhoto,
+  createOptimizedPhotoFile,
+} from '@/lib/photo-client'
 import type { CardRow } from '@/lib/types'
+import type { Area } from 'react-easy-crop'
+import PhotoCropDialog from './PhotoCropDialog'
 import styles from './CardForm.module.scss'
 
 interface CardFormProps {
@@ -50,8 +56,14 @@ export default function CardForm({ existingCard }: CardFormProps) {
   })
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoMasterFile, setPhotoMasterFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  const [photoSourceFile, setPhotoSourceFile] = useState<File | null>(null)
+  const [photoSourceUrl, setPhotoSourceUrl] = useState<string | null>(null)
+  const [cropOpen, setCropOpen] = useState(false)
+  const [photoProcessing, setPhotoProcessing] = useState(false)
+  const [photoLoading, setPhotoLoading] = useState(false)
 
   /** Set initial photo preview from existing card */
   useEffect(() => {
@@ -60,6 +72,24 @@ export default function CardForm({ existingCard }: CardFormProps) {
       setPhotoPreview(url)
     }
   }, [existingCard?.photo_path])
+
+  /** Releases temporary preview URLs when they are replaced or the form unmounts. */
+  useEffect(() => {
+    return () => {
+      if (photoPreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(photoPreview)
+      }
+    }
+  }, [photoPreview])
+
+  /** Releases the temporary source image URL used inside the crop dialog. */
+  useEffect(() => {
+    return () => {
+      if (photoSourceUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(photoSourceUrl)
+      }
+    }
+  }, [photoSourceUrl])
 
   /** Auto-generate slug from name when creating a new card */
   useEffect(() => {
@@ -111,16 +141,118 @@ export default function CardForm({ existingCard }: CardFormProps) {
     const file = e.target.files?.[0]
     setPhotoError(null)
 
+    e.target.value = ''
+
     if (!file) return
 
-    const validationError = validatePhoto(file)
+    if (!ACCEPTED_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError('Nur JPEG, PNG und WebP Dateien sind erlaubt.')
+      return
+    }
+
+    const validationError = validateSourcePhoto(file)
     if (validationError) {
       setPhotoError(validationError)
       return
     }
 
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    setPhotoMasterFile(file)
+    setPhotoSourceFile(file)
+    setPhotoSourceUrl(URL.createObjectURL(file))
+    setCropOpen(true)
+  }
+
+  /** Reopens the crop flow either from the unsaved local photo or the stored photo. */
+  async function handlePhotoEdit() {
+    setPhotoError(null)
+
+    if (photoMasterFile) {
+      setPhotoSourceFile(photoMasterFile)
+      setPhotoSourceUrl(URL.createObjectURL(photoMasterFile))
+      setCropOpen(true)
+      return
+    }
+
+    if (!existingCard?.photo_path) return
+
+    setPhotoLoading(true)
+
+    try {
+      const response = await fetch(
+        `/api/photos/source?path=${encodeURIComponent(existingCard.photo_path)}`,
+      )
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Foto konnte nicht geladen werden.')
+      }
+
+      const blob = await response.blob()
+      const mimeType = blob.type || 'image/jpeg'
+      const extension = getPhotoExtension(mimeType)
+      const fileName = existingCard.photo_path.split('/').pop() || `profilfoto.${extension}`
+      const sourceFile = new File([blob], fileName, {
+        type: mimeType,
+        lastModified: Date.now(),
+      })
+
+      const validationError = validateSourcePhoto(sourceFile)
+      if (validationError) {
+        throw new Error(validationError)
+      }
+
+      setPhotoMasterFile(sourceFile)
+      setPhotoSourceFile(sourceFile)
+      setPhotoSourceUrl(URL.createObjectURL(sourceFile))
+      setCropOpen(true)
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Foto konnte nicht geladen werden.')
+    } finally {
+      setPhotoLoading(false)
+    }
+  }
+
+  /** Cancels cropping and discards the temporary source image. */
+  function handleCropCancel() {
+    setCropOpen(false)
+    setPhotoSourceFile(null)
+    setPhotoSourceUrl(null)
+  }
+
+  /** Applies the selected crop and stores the optimized file for upload. */
+  async function handleCropConfirm(cropAreaPixels: Area) {
+    if (!photoSourceFile || !photoSourceUrl) return
+
+    setPhotoProcessing(true)
+    setPhotoError(null)
+
+    try {
+      const optimizedFile = await createOptimizedPhotoFile({
+        file: photoSourceFile,
+        imageSrc: photoSourceUrl,
+        cropAreaPixels,
+      })
+
+      const validationError = validatePhoto(optimizedFile)
+      if (validationError) {
+        throw new Error(validationError)
+      }
+
+      if (!photoMasterFile) {
+        setPhotoMasterFile(photoSourceFile)
+      }
+      setPhotoFile(optimizedFile)
+      setPhotoPreview(URL.createObjectURL(optimizedFile))
+      setCropOpen(false)
+      setPhotoSourceFile(null)
+      setPhotoSourceUrl(null)
+    } catch (err) {
+      setPhotoError(
+        err instanceof Error ? err.message : 'Das Bild konnte nicht verarbeitet werden.',
+      )
+    } finally {
+      setPhotoProcessing(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -147,6 +279,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
       if (photoFile) {
         const formData = new FormData()
         formData.append('file', photoFile)
+        if (photoMasterFile) {
+          formData.append('source_file', photoMasterFile)
+        }
         formData.append('slug', form.slug)
 
         const uploadRes = await fetch('/api/photos/upload', {
@@ -245,9 +380,21 @@ export default function CardForm({ existingCard }: CardFormProps) {
           )}
         </div>
         <div>
-          <label htmlFor="photo" className="btn btn--secondary" style={{ cursor: 'pointer' }}>
-            Foto auswählen
-          </label>
+          <div className={styles.photoActions}>
+            <label htmlFor="photo" className="btn btn--secondary" style={{ cursor: 'pointer' }}>
+              Foto auswählen
+            </label>
+            {photoPreview && (
+              <button
+                type="button"
+                className="btn btn--secondary"
+                onClick={handlePhotoEdit}
+                disabled={photoProcessing || photoLoading}
+              >
+                Foto bearbeiten
+              </button>
+            )}
+          </div>
           <input
             id="photo"
             type="file"
@@ -255,7 +402,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
             onChange={handlePhotoChange}
             className="sr-only"
           />
-          <p className={styles.photoHint}>JPEG, PNG oder WebP, max. 2 MB</p>
+          <p className={styles.photoHint}>JPEG, PNG oder WebP</p>
+          {photoLoading && <p className={styles.photoStatus}>Foto wird geladen...</p>}
+          {photoProcessing && <p className={styles.photoStatus}>Foto wird optimiert...</p>}
           {photoError && <p className="form-field__error">{photoError}</p>}
         </div>
       </div>
@@ -459,7 +608,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
       <button
         type="submit"
         className="btn btn--primary btn--full"
-        disabled={saving || slugAvailable === false}
+        disabled={saving || photoLoading || photoProcessing || slugAvailable === false}
       >
         {saving
           ? 'Wird gespeichert...'
@@ -467,6 +616,14 @@ export default function CardForm({ existingCard }: CardFormProps) {
             ? 'Änderungen speichern'
             : 'Visitenkarte erstellen'}
       </button>
+
+      <PhotoCropDialog
+        open={cropOpen}
+        imageSrc={photoSourceUrl}
+        processing={photoProcessing}
+        onCancel={handleCropCancel}
+        onConfirm={handleCropConfirm}
+      />
     </form>
   )
 }
