@@ -8,6 +8,7 @@
   width: min(calc(100% - $spacing-8), 720px);
   box-shadow: $shadow-lg;
   overflow: hidden;
+  margin: auto;
 
   &::backdrop {
     background: rgba($black, 0.5);
@@ -41,6 +42,7 @@
   background: $gray-900;
   border-radius: $radius-lg;
   overflow: hidden;
+  margin: auto;
   margin-bottom: $spacing-4;
 
   @media (min-width: $breakpoint-sm) {
@@ -71,3 +73,5 @@
   gap: $spacing-3;
   flex-wrap: wrap;
 }
+
+

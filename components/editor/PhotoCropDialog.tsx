@@ -99,7 +99,7 @@ export default function PhotoCropDialog({
               aspect={1}
               cropShape="rect"
               showGrid
-              objectFit="cover"
+              objectFit="contain"
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={(_, croppedAreaPixels) => setCropAreaPixels(croppedAreaPixels)}
@@ -146,3 +146,4 @@ export default function PhotoCropDialog({
     </dialog>
   )
 }
+
