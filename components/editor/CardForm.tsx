@@ -56,6 +56,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
   })
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoMasterFile, setPhotoMasterFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [photoSourceFile, setPhotoSourceFile] = useState<File | null>(null)
@@ -155,6 +156,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
       return
     }
 
+    setPhotoMasterFile(file)
     setPhotoSourceFile(file)
     setPhotoSourceUrl(URL.createObjectURL(file))
     setCropOpen(true)
@@ -164,9 +166,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
   async function handlePhotoEdit() {
     setPhotoError(null)
 
-    if (photoFile) {
-      setPhotoSourceFile(photoFile)
-      setPhotoSourceUrl(URL.createObjectURL(photoFile))
+    if (photoMasterFile) {
+      setPhotoSourceFile(photoMasterFile)
+      setPhotoSourceUrl(URL.createObjectURL(photoMasterFile))
       setCropOpen(true)
       return
     }
@@ -199,6 +201,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
         throw new Error(validationError)
       }
 
+      setPhotoMasterFile(sourceFile)
       setPhotoSourceFile(sourceFile)
       setPhotoSourceUrl(URL.createObjectURL(sourceFile))
       setCropOpen(true)
@@ -235,6 +238,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
         throw new Error(validationError)
       }
 
+      if (!photoMasterFile) {
+        setPhotoMasterFile(photoSourceFile)
+      }
       setPhotoFile(optimizedFile)
       setPhotoPreview(URL.createObjectURL(optimizedFile))
       setCropOpen(false)
