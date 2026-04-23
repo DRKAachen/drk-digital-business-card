@@ -8,7 +8,7 @@ Digitale Visitenkarten-App für das Deutsche Rote Kreuz. Mitarbeitende können i
 - **QR-Code**: Generierung mit DRK-Logo, Download als PNG (Druck) oder SVG (Vektor)
 - **Kontakt speichern**: vCard 3.0 Download – ein Klick zum Speichern im Adressbuch
 - **Teilen**: Web Share API / Link kopieren
-- **Fotos**: Upload von Profilfotos (JPEG, PNG, WebP) mit clientseitigem Quadrat-Crop inkl. 3x3-Hilfslinien, automatischer Optimierung vor dem Upload sowie nachträglicher Bearbeitung bestehender Fotos (im aktuellen Bearbeitungsvorgang nicht-destruktiv aus demselben Quellbild); finale Upload-Datei bleibt auf max. 2 MB begrenzt
+- **Fotos**: Upload von Profilfotos (JPEG, PNG, WebP) mit clientseitigem Quadrat-Crop inkl. 3x3-Hilfslinien, automatischer Optimierung vor dem Upload sowie nachträglicher Bearbeitung bestehender Fotos auf Basis eines gespeicherten Quellbilds (nicht-destruktiv auch über mehrere Bearbeitungsvorgänge hinweg); finale Upload-Datei bleibt auf max. 2 MB begrenzt
 - **DSGVO-konform**: Self-Hosted, keine externen Dienste auf öffentlichen Seiten, kein Tracking, Security Headers
 - **SSO-Login**: Authentik (OpenID Connect) – zentrale Benutzerverwaltung
 - **Open Graph**: Rich-Link-Previews beim Teilen auf Social Media

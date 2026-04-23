@@ -1,10 +1,11 @@
 'use client'
 
 import type { Area } from 'react-easy-crop'
-import { MAX_PHOTO_SIZE, getPhotoExtension } from '@/lib/photo'
-
-/** Maximum source photo size accepted before client-side processing begins. */
-export const MAX_SOURCE_PHOTO_SIZE = 15 * 1024 * 1024
+import {
+  MAX_PHOTO_SIZE,
+  getPhotoExtension,
+  validateSourcePhoto as validateSourcePhotoShared,
+} from '@/lib/photo'
 
 /** Output sizes tried from largest to smallest square export. */
 const OUTPUT_SIZES = [800, 700, 600, 500]
@@ -20,11 +21,7 @@ const OUTPUT_TYPES = ['image/webp', 'image/jpeg'] as const
  * avoid excessive client memory use from very large camera images.
  */
 export function validateSourcePhoto(file: File): string | null {
-  if (file.size > MAX_SOURCE_PHOTO_SIZE) {
-    return 'Das Foto darf maximal 15 MB groß sein.'
-  }
-
-  return null
+  return validateSourcePhotoShared(file)
 }
 
 /** Loads a local object URL into an image element for canvas processing. */

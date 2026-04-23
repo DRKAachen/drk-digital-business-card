@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { deletePhoto } from '@/lib/storage'
+import { getPhotoBaseKey, getPhotoSourceCandidateKeys } from '@/lib/photo'
 
 /**
  * POST /api/cards – Creates a new card for the authenticated user.
@@ -75,6 +76,14 @@ export async function PATCH(request: NextRequest) {
       data.photo_path !== existing.photo_path
     ) {
       await deletePhoto(existing.photo_path)
+
+      const oldBaseKey = getPhotoBaseKey(existing.photo_path)
+      const newBaseKey = getPhotoBaseKey(data.photo_path)
+      if (oldBaseKey !== newBaseKey) {
+        for (const sourceKey of getPhotoSourceCandidateKeys(existing.photo_path)) {
+          await deletePhoto(sourceKey)
+        }
+      }
     }
 
     return NextResponse.json(updated)
@@ -121,6 +130,9 @@ export async function DELETE(request: NextRequest) {
   try {
     if (card.photo_path) {
       await deletePhoto(card.photo_path)
+      for (const sourceKey of getPhotoSourceCandidateKeys(card.photo_path)) {
+        await deletePhoto(sourceKey)
+      }
     }
 
     await prisma.card.delete({ where: { id } })

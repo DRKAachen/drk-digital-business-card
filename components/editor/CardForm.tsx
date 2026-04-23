@@ -279,6 +279,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
       if (photoFile) {
         const formData = new FormData()
         formData.append('file', photoFile)
+        if (photoMasterFile) {
+          formData.append('source_file', photoMasterFile)
+        }
         formData.append('slug', form.slug)
 
         const uploadRes = await fetch('/api/photos/upload', {
