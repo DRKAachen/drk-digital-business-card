@@ -7,17 +7,28 @@ import {
 } from '@aws-sdk/client-s3'
 
 /**
- * S3-compatible storage client configured for Garage.
- * forcePathStyle is required because Garage does not support virtual-hosted-style URLs.
+ * S3-compatible storage client.
+ *
+ * Targets Hetzner Object Storage (Ceph/RadosGW) by default. Two Hetzner
+ * quirks are handled here:
+ *  - Checksums must be WHEN_REQUIRED: AWS SDK v3 (>=3.729 / "v2.23+" CLI)
+ *    sends default integrity checksums that Hetzner rejects with misleading
+ *    SignatureDoesNotMatch / InvalidArgument errors.
+ *  - Per-object ACLs are disabled on Hetzner, so no upload here sends an ACL;
+ *    public access is granted via a bucket-level policy instead.
+ *
+ * forcePathStyle stays on: it works for both Hetzner and Garage.
  */
 const s3 = new S3Client({
-  region: 'garage',
+  region: process.env.S3_REGION || 'fsn1',
   endpoint: process.env.S3_ENDPOINT,
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,
   },
   forcePathStyle: true,
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED',
 })
 
 const BUCKET = process.env.S3_BUCKET || 'photos'
