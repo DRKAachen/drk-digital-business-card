@@ -8,8 +8,12 @@
  * every ticket, so both the client dialog and the server route stay in sync.
  */
 
-/** Fallback support mailbox, shown to the user whenever the ticket API is unavailable. */
-export const SUPPORT_EMAIL = 'digitalisierung@drk-aachen.de'
+/**
+ * Fallback support mailbox, shown to the user whenever the ticket API is unavailable.
+ * This address is monitored by Zammad: mails sent here are turned into tickets
+ * automatically, so the fallback path lands in the same helpdesk as the in-app form.
+ */
+export const SUPPORT_EMAIL = 'support.visitenkarte@drk-digital.io'
 
 /** Application name attached to every ticket (Zammad top-level `app_name`). */
 export const APP_NAME = 'Visitenkarte'
