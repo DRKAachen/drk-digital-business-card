@@ -1,0 +1,356 @@
+@use '@/styles/variables' as *;
+
+.dialog {
+  border: none;
+  border-radius: $radius-xl;
+  padding: 0;
+  width: min(calc(100% - #{$spacing-8}), 480px);
+  max-height: calc(100dvh - #{$spacing-8});
+  box-shadow: $shadow-lg;
+  overflow: hidden;
+  margin: auto;
+
+  &::backdrop {
+    background: rgba($black, 0.5);
+  }
+
+  // On small screens the dialog becomes a bottom sheet: full width, pinned to
+  // the bottom, with a rounded top edge — thumb-friendly on phones.
+  @media (max-width: $breakpoint-sm) {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    margin: auto auto 0;
+    border-radius: $radius-xl $radius-xl 0 0;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  background: $white;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-3;
+  padding: $spacing-5 $spacing-6;
+  border-bottom: 1px solid $gray-200;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  border-radius: $radius-md;
+  color: $gray-500;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $gray-100;
+    color: $gray-900;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  padding: $spacing-5 $spacing-6 $spacing-6;
+  overflow-y: auto;
+}
+
+.intro {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  line-height: 1.6;
+  margin: 0 0 $spacing-4;
+}
+
+.label {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $gray-700;
+  margin-bottom: $spacing-2;
+}
+
+.input {
+  width: 100%;
+  padding: $spacing-3 $spacing-4;
+  margin-bottom: $spacing-4;
+  border: 1px solid $gray-300;
+  border-radius: $radius-md;
+  font-family: inherit;
+  font-size: $font-size-base;
+
+  &:focus {
+    outline: none;
+    border-color: $drk-red;
+    box-shadow: 0 0 0 3px rgba($drk-red, 0.15);
+  }
+
+  &:disabled {
+    background: $gray-50;
+    opacity: 0.7;
+  }
+}
+
+.textarea {
+  width: 100%;
+  padding: $spacing-3 $spacing-4;
+  border: 1px solid $gray-300;
+  border-radius: $radius-md;
+  font-family: inherit;
+  font-size: $font-size-base;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 120px;
+
+  &:focus {
+    outline: none;
+    border-color: $drk-red;
+    box-shadow: 0 0 0 3px rgba($drk-red, 0.15);
+  }
+
+  &:disabled {
+    background: $gray-50;
+    opacity: 0.7;
+  }
+}
+
+// Visually hidden but present in the DOM for bots to trip over.
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.attachRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-2 $spacing-3;
+  margin-top: $spacing-4;
+}
+
+.attachButton {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-3;
+  border: 1px solid $gray-300;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $gray-700;
+  cursor: pointer;
+  transition: background-color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.attachHint {
+  font-size: $font-size-xs;
+  color: $gray-500;
+}
+
+.attachList {
+  list-style: none;
+  margin: $spacing-3 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.attachItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-2 $spacing-3;
+  background: $gray-50;
+  border: 1px solid $gray-200;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+}
+
+.attachName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $gray-800;
+}
+
+.attachSize {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $gray-500;
+}
+
+.attachRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  border-radius: $radius-sm;
+  color: $gray-500;
+  cursor: pointer;
+  transition: background-color $transition-fast, color $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: $gray-200;
+    color: $drk-red;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.error {
+  margin: $spacing-4 0 0;
+  padding: $spacing-3 $spacing-4;
+  background: rgba($drk-red, 0.08);
+  border: 1px solid rgba($drk-red, 0.2);
+  border-radius: $radius-md;
+  color: $drk-red;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-3;
+  margin-top: $spacing-6;
+
+  // Stack full-width on phones so the primary action is a big tap target.
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column-reverse;
+
+    :global(.btn) {
+      width: 100%;
+    }
+  }
+}
+
+.fallback {
+  margin: $spacing-4 0 0;
+  font-size: $font-size-xs;
+  color: $gray-500;
+  text-align: center;
+}
+
+.fallbackLink {
+  color: $gray-600;
+  text-decoration: underline;
+
+  &:hover {
+    color: $drk-red;
+  }
+}
+
+.total {
+  margin: $spacing-2 0 0;
+  font-size: $font-size-xs;
+  color: $gray-500;
+  text-align: right;
+}
+
+// Success state
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: $spacing-8 $spacing-6;
+}
+
+.successIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: $spacing-4;
+  border-radius: $radius-full;
+  background: rgba(#16a34a, 0.12);
+  color: #16a34a;
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.successTitle {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  margin: 0 0 $spacing-2;
+}
+
+.successText {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  line-height: 1.6;
+  margin: 0 0 $spacing-6;
+}

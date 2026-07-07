@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { buildSupportMailto, generateSupportRef } from '@/lib/support'
+import SupportDialog from './SupportDialog'
 import styles from './SupportButton.module.scss'
 
 interface SupportButtonProps {
@@ -19,50 +20,38 @@ interface SupportButtonProps {
 }
 
 /**
- * Support button that opens the user's mail client with a prefilled request
- * to {@link SUPPORT_EMAIL}. A fresh reference ID is generated on every click
- * and embedded in the subject, so each support mail is uniquely identifiable
- * even without a backend. Logged-in user email (via Auth.js session) and the
- * current page URL are added to the body for ops context — the user can
- * review and edit everything in their own mail client before sending.
- *
- * Rendered as an anchor tag for native right-click / keyboard support; the
- * actual `href` is built at click-time so the reference ID is fresh and the
- * page URL reflects the location at click, not at render.
+ * Support trigger that opens the {@link SupportDialog}, where the user writes a
+ * message (plus optional screenshots) that is filed as a Zammad helpdesk ticket
+ * via the `/api/support` backend route. The helpdesk API token never reaches the
+ * client — the button only opens the dialog and the dialog only talks to our own
+ * endpoint. The logged-in user's email (from the Auth.js session) is shown in the
+ * dialog so they know where replies will go.
  */
 export default function SupportButton({ variant = 'link', className, label = 'Support' }: SupportButtonProps) {
   const { data: session } = useSession()
-
-  function handleClick(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.preventDefault()
-
-    const ref = generateSupportRef()
-    const pageUrl = typeof window !== 'undefined' ? window.location.href : undefined
-    const timestamp = new Date().toISOString()
-
-    const mailto = buildSupportMailto({
-      userEmail: session?.user?.email ?? null,
-      pageUrl,
-      ref,
-      timestamp,
-    })
-
-    window.location.href = mailto
-  }
+  const [open, setOpen] = useState(false)
 
   const variantClass = variant === 'primary' ? styles.primary : styles.link
   const combined = className ? `${variantClass} ${className}` : variantClass
 
   return (
-    <a
-      href={`mailto:`}
-      onClick={handleClick}
-      className={combined}
-      aria-label="Support kontaktieren"
-    >
-      <MailIcon />
-      <span>{label}</span>
-    </a>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={combined}
+        aria-haspopup="dialog"
+        aria-label="Support kontaktieren"
+      >
+        <MailIcon />
+        <span>{label}</span>
+      </button>
+      <SupportDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        userEmail={session?.user?.email ?? null}
+      />
+    </>
   )
 }
 
