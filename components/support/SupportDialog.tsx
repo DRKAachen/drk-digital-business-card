@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
 import { SUPPORT_EMAIL } from '@/lib/support'
 import styles from './SupportDialog.module.scss'
 
@@ -35,7 +34,6 @@ interface PreparedAttachment {
  */
 export default function SupportDialog({ open, onClose, userEmail }: SupportDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const pathname = usePathname()
 
   const [message, setMessage] = useState('')
   /** Email typed by anonymous senders; ignored when `userEmail` is set. */
@@ -149,7 +147,10 @@ export default function SupportDialog({ open, onClose, userEmail }: SupportDialo
           website, // honeypot
           fields: {
             device_os: detectDeviceOs(),
-            active_screen: pathname,
+            // Full page URL (origin + path + query), not just the route path, so
+            // agents see the exact page the user was on. Lands in the ticket
+            // sidebar field, never in the message body.
+            active_screen: currentUrl(),
           },
           attachments: attachments.map((a) => ({
             filename: a.filename,
@@ -390,6 +391,12 @@ function fileToBase64(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error)
     reader.readAsDataURL(file)
   })
+}
+
+/** Full URL of the page the support dialog was submitted from (origin + path + query). */
+function currentUrl(): string {
+  if (typeof window === 'undefined') return ''
+  return window.location.href
 }
 
 /** Best-effort human-readable OS + browser string from the user agent, for support context. */

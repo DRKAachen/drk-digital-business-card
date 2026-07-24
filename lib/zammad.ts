@@ -6,15 +6,24 @@
  * The app's Support button posts to `/api/support`, and only that route calls
  * {@link createSupportTicket}, which in turn calls Zammad's `POST /api/v1/tickets`.
  *
- * Two things here are load-bearing for a usable ticket (see the integration guide):
- *   1. `customer_id: "guess:<email>"` — links or creates the sender so the ticket's
- *      customer is the real user, not the bot agent.
+ * Three things here are load-bearing for a usable ticket (see the integration guide):
+ *   1. We resolve the sender's numeric Zammad user id up front (creating the user
+ *      if needed) instead of relying on the `guess:<email>` shorthand, so we can
+ *      set `origin_by_id`.
  *   2. `sender: "Customer"` + `from: <email>` — makes the article read as coming
- *      from the user, so a Zammad "reply" goes back to them.
+ *      from the user.
+ *   3. `origin_by_id: <userId>` — attributes the article to the requester, not the
+ *      bot agent. This is the field that actually makes a Zammad "Reply" go back
+ *      to the user; for API-created articles `sender`/`from` alone are not enough.
+ *      If the id can't be resolved we fall back to `customer_id: "guess:<email>"`
+ *      (ticket still links to the user; reply-to may target the bot — old behaviour).
  */
 
-/** Hard ceiling on the Zammad request so a hung helpdesk never blocks our route. */
-const TIMEOUT_MS = 5000
+/**
+ * Hard ceiling on the whole Zammad flow so a hung helpdesk never blocks our route.
+ * Covers up to three sequential calls (create/lookup customer, then create ticket).
+ */
+const TIMEOUT_MS = 8000
 
 /** Contextual fields that exist as global Zammad attributes and ride along as top-level keys. */
 export interface ZammadTicketFields {
@@ -50,6 +59,59 @@ export type CreateSupportTicketResult =
   | { ok: false; reason: 'exception'; detail: string }
 
 /**
+ * Resolve the customer's numeric Zammad user id, creating them if needed.
+ *
+ * We need the real id (not the `guess:<email>` shorthand) so we can set the
+ * article's `origin_by_id`. That's what makes an agent's "Reply" address the
+ * customer: Zammad otherwise attributes an API-created article to the token's
+ * user (the bot), so Reply would go to the bot. Returns null if it can't be
+ * resolved — the caller then falls back to `guess:` (ticket still links; the
+ * reply-to may be wrong, i.e. the old behaviour).
+ */
+async function resolveCustomerId(
+  baseUrl: string,
+  token: string,
+  email: string,
+  signal: AbortSignal,
+): Promise<number | null> {
+  const headers = {
+    Authorization: `Token token=${token}`,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }
+  try {
+    // Create first — authoritative, needs no search index. 201 for new users;
+    // 422 when the email already exists.
+    const create = await fetch(`${baseUrl}/api/v1/users`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ email, roles: ['Customer'] }),
+      signal,
+    })
+    if (create.ok) {
+      const user = (await create.json().catch(() => ({}))) as { id?: number }
+      return user.id ?? null
+    }
+    // Already exists → look them up by email.
+    const search = await fetch(
+      `${baseUrl}/api/v1/users/search?query=${encodeURIComponent(email)}&limit=50`,
+      { headers, signal },
+    )
+    if (!search.ok) return null
+    const users = (await search.json().catch(() => [])) as Array<{ id?: number; email?: string }>
+    const hit = Array.isArray(users)
+      ? users.find((u) => (u.email ?? '').toLowerCase() === email.toLowerCase())
+      : undefined
+    return hit?.id ?? null
+  } catch (err) {
+    // Bubble up the abort so the caller maps it to a timeout; swallow the rest.
+    if (err instanceof DOMException && err.name === 'AbortError') throw err
+    console.error('[zammad] customer resolve failed:', err)
+    return null
+  }
+}
+
+/**
  * Files a support ticket in Zammad and returns the assigned ticket number.
  *
  * Never throws: every failure mode (missing config, HTTP error, network/timeout)
@@ -69,19 +131,14 @@ export async function createSupportTicket({
 
   const f = { ...(fields ?? {}) }
 
-  // The context also goes into the article body as a readable footer, so agents
-  // see it inline without opening the object attributes panel.
-  const body = [
-    message,
-    '',
-    '---',
-    `Screen: ${f.active_screen ?? '-'}`,
-    `App: ${[f.app_name, f.app_version].filter(Boolean).join(' ') || '-'}`,
-    `Device: ${f.device_os ?? '-'}`,
-    `User: ${f.app_user_identification ?? '-'}`,
-  ].join('\n')
+  // The article body is ONLY the user's message. The technical context lives in
+  // the structured custom fields below (visible in the ticket sidebar), never in
+  // the body — otherwise Zammad quotes it back into the agent's "Reply" mail,
+  // dumping the user's own device/browser data into the response to them.
+  const body = message
 
-  // Drop empty/blank fields — Zammad rejects nothing, but we keep tickets tidy.
+  // Drop empty/blank fields — Zammad silently ignores unknown/empty keys, but we
+  // keep tickets tidy and only send what's actually populated.
   const cleanFields = Object.fromEntries(
     Object.entries(f).filter(([, v]) => typeof v === 'string' && v.trim() !== ''),
   )
@@ -90,6 +147,10 @@ export async function createSupportTicket({
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
   try {
+    // Resolve the requester's numeric id up front so we can attribute the article
+    // to them (origin_by_id) — otherwise an agent's "Reply" targets the bot agent.
+    const customerId = await resolveCustomerId(baseUrl, token, email, controller.signal)
+
     const res = await fetch(`${baseUrl}/api/v1/tickets`, {
       method: 'POST',
       signal: controller.signal,
@@ -100,12 +161,13 @@ export async function createSupportTicket({
       body: JSON.stringify({
         title: 'Support-Anfrage – Visitenkarte',
         group,
-        customer_id: `guess:${email}`,
+        customer_id: customerId ?? `guess:${email}`,
         article: {
           subject: 'Support-Anfrage',
           type: 'web',
           sender: 'Customer',
           from: email,
+          origin_by_id: customerId ?? undefined,
           internal: false,
           body,
           attachments: (attachments ?? []).map((a) => ({
