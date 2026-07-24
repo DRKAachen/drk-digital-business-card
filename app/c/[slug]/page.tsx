@@ -29,8 +29,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const siteUrl = getSiteUrl()
   const ogImageUrl = `${siteUrl}/c/${slug}/opengraph-image`
 
+  // Tab title reflects the card's own organization, not the global
+  // NEXT_PUBLIC_ORG_NAME (which would otherwise append the app owner's
+  // Kreisverband to every card via the root layout's title template).
+  // `absolute` bypasses that template; fall back to "Visitenkarte" when the
+  // card has no organization set.
+  const tabSuffix = card.organization?.trim() || 'Visitenkarte'
+
   return {
-    title: `${fullName} – Visitenkarte`,
+    title: { absolute: `${fullName} – ${tabSuffix}` },
     description: description || `Digitale Visitenkarte von ${fullName}`,
     openGraph: {
       title: fullName,
