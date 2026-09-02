@@ -88,6 +88,9 @@ model Card {
   website      String?
   linkedin     String?
   xing         String?
+  // Optional meeting-booking link (Outlook "Bei mir buchen", Bookings, Calendly, …).
+  // Rendered as the prominent "Termin buchen" call-to-action on the public card.
+  booking_url  String?
   photo_path   String?
   is_published Boolean  @default(false)
   created_at   DateTime @default(now())

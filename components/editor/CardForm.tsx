@@ -52,6 +52,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
     website: existingCard?.website ?? '',
     linkedin: existingCard?.linkedin ?? '',
     xing: existingCard?.xing ?? '',
+    booking_url: existingCard?.booking_url ?? '',
     is_published: existingCard?.is_published ?? false,
   })
 
@@ -321,6 +322,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
         website: normalizeUrl(form.website),
         linkedin: normalizeUrl(form.linkedin),
         xing: normalizeUrl(form.xing),
+        booking_url: normalizeUrl(form.booking_url),
         photo_path: photoPath,
         is_published: form.is_published,
       }
@@ -554,6 +556,24 @@ export default function CardForm({ existingCard }: CardFormProps) {
         </div>
       </fieldset>
 
+      {/* Meeting booking */}
+      <fieldset className={styles.section}>
+        <legend className={styles.sectionTitle}>Terminbuchung</legend>
+        <div className="form-field">
+          <label htmlFor="booking_url" className="form-field__label">Buchungslink</label>
+          <input
+            id="booking_url" name="booking_url" type="text"
+            value={form.booking_url} onChange={handleChange}
+            className="form-field__input"
+            placeholder="https://outlook.office.com/bookwithme/user/..."
+          />
+          <p className={styles.fieldHint}>
+            Optional. Wird auf Ihrer Karte als hervorgehobener Button „Termin buchen“ angezeigt –
+            z.B. Outlook „Bei mir buchen“, Microsoft Bookings oder Calendly.
+          </p>
+        </div>
+      </fieldset>
+
       {/* Slug + Publishing */}
       <fieldset className={styles.section}>
         <legend className={styles.sectionTitle}>Veröffentlichung</legend>
@@ -592,8 +612,8 @@ export default function CardForm({ existingCard }: CardFormProps) {
         {form.is_published && (
           <p className={styles.publishNotice}>
             Mit der Veröffentlichung werden Ihre eingegebenen Kontaktdaten (Name, Position,
-            Kontaktdaten, Adresse, Online-Profile und ggf. Foto) über eine öffentliche URL
-            für jeden abrufbar. Sie können die Veröffentlichung jederzeit rückgängig machen.
+            Kontaktdaten, Adresse, Online-Profile, ggf. Buchungslink und Foto) über eine
+            öffentliche URL für jeden abrufbar. Sie können die Veröffentlichung jederzeit rückgängig machen.
             Mehr dazu in unserer{' '}
             <a href="/datenschutz" target="_blank" rel="noopener noreferrer">
               Datenschutzerklärung

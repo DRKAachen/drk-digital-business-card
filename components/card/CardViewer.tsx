@@ -75,6 +75,23 @@ export default function CardViewer({ card, cardUrl, vcardUrl }: CardViewerProps)
           {card.organization && <p className={styles.org}>{card.organization}</p>}
         </header>
 
+        {/* Booking CTA — deliberately placed above the quick actions: booking a
+            meeting is the action we most want visitors to take, so it gets the
+            first and most prominent slot rather than a row in the details list. */}
+        {card.booking_url && (
+          <div className={styles.booking}>
+            <a
+              href={ensureProtocol(card.booking_url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.bookingButton}
+            >
+              <CalendarIcon />
+              <span>Termin buchen</span>
+            </a>
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className={styles.actions}>
           {card.phone && (
@@ -260,6 +277,10 @@ function showToast(message: string) {
     toast.classList.remove('toast--visible')
     setTimeout(() => toast.remove(), 300)
   }, 2500)
+}
+
+function CalendarIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 }
 
 function PhoneIcon() {

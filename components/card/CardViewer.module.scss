@@ -87,6 +87,46 @@
   font-weight: 500;
 }
 
+// Booking CTA — the hero action, sitting between the header and the quick
+// actions. Uses DRK red (the quick actions are blue) so it reads as the one
+// thing we want the visitor to do, not just another link.
+.booking {
+  padding: $spacing-5 $spacing-4 0;
+}
+
+.bookingButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  width: 100%;
+  padding: $spacing-4 $spacing-5;
+  background: $drk-red;
+  color: $white;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color $transition-fast, transform $transition-fast,
+    box-shadow $transition-fast;
+
+  &:hover {
+    background: $drk-red-dark;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+}
+
 // Actions
 .actions {
   display: flex;
