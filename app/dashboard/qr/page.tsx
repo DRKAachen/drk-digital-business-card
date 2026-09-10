@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/url'
 import QrExport from '@/components/qr/QrExport'
+import AddToWalletButton from '@/components/wallet/AddToWalletButton'
+import { isWalletConfigured } from '@/lib/wallet'
 
 export const metadata = {
   title: 'QR-Code',
@@ -74,6 +76,19 @@ export default async function QrPage() {
         Laden Sie Ihren QR-Code herunter, um ihn auf Visitenkarten zu drucken oder in Präsentationen zu verwenden.
       </p>
       <QrExport cardUrl={cardUrl} cardName={cardName} />
+
+      {isWalletConfigured() && (
+        <section style={{ marginTop: '2rem', maxWidth: 500 }}>
+          <h2 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Apple Wallet
+          </h2>
+          <p style={{ color: '#525252', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            Fügen Sie Ihre Visitenkarte zu Apple Wallet hinzu. Der Pass enthält Ihren QR-Code
+            und Ihre Kontaktdaten – ideal zum schnellen Vorzeigen auf dem iPhone.
+          </p>
+          <AddToWalletButton walletUrl={`${siteUrl}/c/${card.slug}/wallet`} alwaysShow />
+        </section>
+      )}
     </div>
   )
 }

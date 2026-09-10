@@ -21,11 +21,13 @@
     "@prisma/client": "^6.19.2",
     "next": "^15.3.1",
     "next-auth": "^5.0.0-beta.30",
+    "passkit-generator": "^3.5.8",
     "prisma": "^6.19.2",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-easy-crop": "^5.5.7"
+    "react-easy-crop": "^5.5.7",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

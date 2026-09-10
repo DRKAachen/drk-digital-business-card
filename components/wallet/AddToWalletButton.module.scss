@@ -1,0 +1,44 @@
+@use '@/styles/variables' as *;
+
+// Orientiert sich an Apples „Add to Apple Wallet"-Badge: schwarze Pille, weißer Text.
+.button {
+display: inline-flex;
+align-items: center;
+gap: 0.6rem;
+width: 100%;
+justify-content: center;
+padding: 0.65rem 1.1rem;
+background: #000;
+color: #fff;
+border-radius: 999px;
+text-decoration: none;
+line-height: 1.1;
+transition: opacity 0.15s ease;
+
+&:hover {
+opacity: 0.85;
+color: #fff;
+}
+}
+
+.icon {
+width: 32px;
+height: 32px;
+flex-shrink: 0;
+}
+
+.text {
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+}
+
+.small {
+font-size: 0.65rem;
+letter-spacing: 0.02em;
+}
+
+.big {
+font-size: 1.05rem;
+font-weight: 600;
+}

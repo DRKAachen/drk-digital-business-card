@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { getSiteUrl } from '@/lib/url'
 import type { CardRow } from '@/lib/types'
 import CardViewer from '@/components/card/CardViewer'
+import {isWalletConfigured} from '@/lib/wallet'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -70,6 +71,6 @@ export default async function CardPage({ params }: PageProps) {
   const siteUrl = getSiteUrl()
   const cardUrl = `${siteUrl}/c/${card.slug}`
   const vcardUrl = `${siteUrl}/c/${card.slug}/vcard`
-
-  return <CardViewer card={card} cardUrl={cardUrl} vcardUrl={vcardUrl} />
+  const walletUrl = isWalletConfigured() ? `${siteUrl}/c/${card.slug}/wallet` : undefined 
+  return <CardViewer card={card} cardUrl={cardUrl} vcardUrl={vcardUrl} walletUrl={walletUrl} />
 }
