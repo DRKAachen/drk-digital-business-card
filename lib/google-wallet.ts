@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
-
+console.log('DEBUG: GOOGLE_WALLET_PRIVATE_KEY exists?', !!process.env.GOOGLE_WALLET_PRIVATE_KEY);
+console.log('DEBUG: GOOGLE_WALLET_PRIVATE_KEY length:', (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').length);
+console.log('DEBUG: Key starts with:', (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').substring(0, 30));
 interface PassData {
   name: string;
   title: string;
