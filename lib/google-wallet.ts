@@ -1,7 +1,5 @@
 import jwt from 'jsonwebtoken';
-console.log('DEBUG: GOOGLE_WALLET_PRIVATE_KEY exists?', !!process.env.GOOGLE_WALLET_PRIVATE_KEY);
-console.log('DEBUG: GOOGLE_WALLET_PRIVATE_KEY length:', (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').length);
-console.log('DEBUG: Key starts with:', (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').substring(0, 30));
+
 interface PassData {
   name: string;
   title: string;
@@ -17,16 +15,39 @@ export interface GoogleWalletConfig {
   projectId: string;
 }
 
+/**
+ * Liest den privaten Schlüssel. Bevorzugt die base64-kodierte Variante,
+ * weil Zeilenumbrüche in Umgebungsvariablen (z. B. in Coolify) verloren gehen.
+ */
+function readPrivateKey(): string {
+  const b64 = process.env.GOOGLE_WALLET_PRIVATE_KEY_B64;
+  if (b64) {
+    return Buffer.from(b64, 'base64').toString('utf8');
+  }
+  // Fallback für die lokale Entwicklung mit \n im .env
+  return (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+}
+
+/** Domain ohne Protokoll – Google Wallet erwartet nur den Host. */
+function getOrigin(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL || '';
+  try {
+    return new URL(url).host;
+  } catch {
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  }
+}
+
 export function getGoogleWalletConfig(): GoogleWalletConfig {
   const config = {
     issuerId: process.env.GOOGLE_WALLET_ISSUER_ID || '',
     serviceAccountEmail: process.env.GOOGLE_WALLET_SERVICE_ACCOUNT_EMAIL || '',
     privateKeyId: process.env.GOOGLE_WALLET_PRIVATE_KEY_ID || '',
-    privateKey: (process.env.GOOGLE_WALLET_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+    privateKey: readPrivateKey(),
     projectId: process.env.GOOGLE_WALLET_PROJECT_ID || '',
   };
 
-  if (!config.issuerId || !config.privateKey) {
+  if (!config.issuerId || !config.privateKey || !config.serviceAccountEmail) {
     throw new Error('Google Wallet config incomplete');
   }
 
@@ -48,56 +69,73 @@ export function generateGoogleWalletJWT(
   isOwner: boolean
 ): string {
   const config = getGoogleWalletConfig();
+  const origin = getOrigin();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+
+  const textModulesData = [
+    {
+      id: 'email',
+      header: 'E-Mail',
+      body: passData.email,
+    },
+  ];
+
+  // Leere Felder weglassen, sonst zeigt Google leere Zeilen an
+  if (passData.phone) {
+    textModulesData.push({
+      id: 'phone',
+      header: 'Telefon',
+      body: passData.phone,
+    });
+  }
 
   const payload = {
     iss: config.serviceAccountEmail,
     aud: 'google',
-    origins: ['localhost', process.env.NEXT_PUBLIC_APP_URL || ''],
+    origins: origin ? [origin] : [],
     typ: 'savetowallet',
     payload: {
       genericObjects: [
         {
-          id: `${config.issuerId}.${cardSlug}`,
+          // Objekt-IDs dürfen nur Buchstaben, Ziffern, Punkt, Bindestrich und Unterstrich enthalten
+          id: `${config.issuerId}.${cardSlug.replace(/[^a-zA-Z0-9._-]/g, '-')}`,
           classId: `${config.issuerId}.drk_card`,
           genericType: 'GENERIC_V2',
-          hexBackgroundColor: isOwner ? '#e20019' : '#1c252a',
+          // Eigene Karte in DRK-Rot, fremde Karte in Dunkelblau
+          hexBackgroundColor: isOwner ? '#e2001a' : '#1c253a',
           cardTitle: {
             defaultValue: {
-              language: 'en',
-              value: passData.name || 'DRK Card',
-            },
-          },
-          subheader: {
-            defaultValue: {
-              language: 'en',
-              value: passData.title || 'Mitglied',
+              language: 'de',
+              value: 'Deutsches Rotes Kreuz',
             },
           },
           header: {
             defaultValue: {
-              language: 'en',
-              value: 'DRK Digital',
+              language: 'de',
+              value: passData.name || 'DRK Visitenkarte',
             },
           },
-          textModulesData: [
-            {
-              id: 'email',
-              header: 'E-Mail',
-              body: passData.email,
+          subheader: {
+            defaultValue: {
+              language: 'de',
+              value: passData.title || '',
             },
-            {
-              id: 'phone',
-              header: 'Telefon',
-              body: passData.phone || '',
-            },
-          ],
+          },
+          textModulesData,
           barcode: {
             type: 'QR_CODE',
-            value: `https://drk-visitenkarte.de/c/${cardSlug}`,
+            value: `${baseUrl}/c/${cardSlug}`,
+            alternateText: 'Scannen für Kontaktdaten',
           },
           logo: {
             sourceUri: {
-              uri: `${process.env.NEXT_PUBLIC_APP_URL}/drk-logo.png`,
+              uri: `${baseUrl}/drk-logo.png`,
+            },
+            contentDescription: {
+              defaultValue: {
+                language: 'de',
+                value: 'DRK Logo',
+              },
             },
           },
         },
@@ -105,11 +143,9 @@ export function generateGoogleWalletJWT(
     },
   };
 
-  const token = jwt.sign(payload, config.privateKey, {
+  return jwt.sign(payload, config.privateKey, {
     algorithm: 'RS256',
     keyid: config.privateKeyId,
     expiresIn: '1h',
   });
-
-  return token;
 }
