@@ -71,22 +71,8 @@ export function generateGoogleWalletJWT(
   const config = getGoogleWalletConfig();
   const origin = getOrigin();
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
-
-  const textModulesData = [
-    {
-      id: 'email',
-      header: 'E-Mail',
-      body: passData.email,
-    },
-  ];
-  if (passData.phone) {
-    textModulesData.push({
-      id: 'phone',
-      header: 'Telefon',
-      body: passData.phone,
-    });
-  }
-  const payload = {
+    const cardLink = `${baseUrl}/c/${cardSlug}`;
+    const payload = {
     iss: config.serviceAccountEmail,
     aud: 'google',
     origins: origin ? [origin] : [],
@@ -112,13 +98,15 @@ export function generateGoogleWalletJWT(
               value: passData.name || 'DRK Visitenkarte',
             },
           },
-          subheader: {
-            defaultValue: {
-              language: 'de',
-              value: passData.title || '',
-            },
+                    linksModuleData: {
+            uris: [
+              {
+                id: 'card',
+                uri: cardLink,
+                description: 'Digitale Visitenkarte öffnen',
+              },
+            ],
           },
-          textModulesData,
           barcode: {
             type: 'QR_CODE',
             value: `${baseUrl}/c/${cardSlug}`,
