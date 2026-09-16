@@ -30,7 +30,7 @@ function readPrivateKey(): string {
 
 /** Domain ohne Protokoll – Google Wallet erwartet nur den Host. */
 function getOrigin(): string {
-  const url = process.env.NEXT_PUBLIC_APP_URL || '';
+  const url = process.env.NEXT_PUBLIC_SITE_URL || '';
   try {
     return new URL(url).host;
   } catch {
@@ -70,7 +70,7 @@ export function generateGoogleWalletJWT(
 ): string {
   const config = getGoogleWalletConfig();
   const origin = getOrigin();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
 
   const textModulesData = [
     {
