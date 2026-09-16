@@ -79,8 +79,6 @@ export function generateGoogleWalletJWT(
       body: passData.email,
     },
   ];
-
-  // Leere Felder weglassen, sonst zeigt Google leere Zeilen an
   if (passData.phone) {
     textModulesData.push({
       id: 'phone',
@@ -88,7 +86,6 @@ export function generateGoogleWalletJWT(
       body: passData.phone,
     });
   }
-
   const payload = {
     iss: config.serviceAccountEmail,
     aud: 'google',
@@ -99,7 +96,7 @@ export function generateGoogleWalletJWT(
         {
           // Objekt-IDs dürfen nur Buchstaben, Ziffern, Punkt, Bindestrich und Unterstrich enthalten
           id: `${config.issuerId}.${cardSlug.replace(/[^a-zA-Z0-9._-]/g, '-')}`,
-          classId: `${config.issuerId}.drk_card`,
+          classId: 'drk_card',
           genericType: 'GENERIC_V2',
           // Eigene Karte in DRK-Rot, fremde Karte in Dunkelblau
           hexBackgroundColor: isOwner ? '#e2001a' : '#1c253a',
