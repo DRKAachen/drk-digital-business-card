@@ -96,7 +96,7 @@ export function generateGoogleWalletJWT(
         {
           // Objekt-IDs dürfen nur Buchstaben, Ziffern, Punkt, Bindestrich und Unterstrich enthalten
           id: `${config.issuerId}.${cardSlug.replace(/[^a-zA-Z0-9._-]/g, '-')}`,
-          classId: 'drk_card',
+          classId: `${config.issuerId}.drk_card`,
           genericType: 'GENERIC_V2',
           // Eigene Karte in DRK-Rot, fremde Karte in Dunkelblau
           hexBackgroundColor: isOwner ? '#e2001a' : '#1c253a',
