@@ -5,6 +5,7 @@ import type { CardRow } from '@/lib/types'
 import { getPhotoUrl } from '@/lib/photo'
 import SupportButton from '@/components/support/SupportButton'
 import AddToWalletButton from '@/components/wallet/AddToWalletButton'
+import { AddToGoogleWalletButton } from '@/components/wallet/AddToGoogleWalletButton'
 import styles from './CardViewer.module.scss'
 
 interface CardViewerProps {
@@ -15,13 +16,21 @@ interface CardViewerProps {
   vcardUrl: string
   /** Full URL for the Apple Wallet pass endpoint (undefined when Wallet is not configured) */
   walletUrl?: string
+  /** Slug für den Google-Wallet-Pass (undefined, wenn Google Wallet nicht konfiguriert ist) */
+  googleWalletSlug?: string
 }
 
 /**
  * Public card viewer: renders the full contact card with action buttons.
  * Shown when someone scans the QR code or opens the card URL.
  */
-export default function CardViewer({ card, cardUrl, vcardUrl, walletUrl }: CardViewerProps) {
+export default function CardViewer({
+  card,
+  cardUrl,
+  vcardUrl,
+  walletUrl,
+  googleWalletSlug,
+}: CardViewerProps) {
   const fullName = `${card.first_name} ${card.last_name}`
   const initials = `${card.first_name.charAt(0)}${card.last_name.charAt(0)}`.toUpperCase()
   const photoUrl = getPhotoUrl(card.photo_path)
@@ -197,8 +206,10 @@ export default function CardViewer({ card, cardUrl, vcardUrl, walletUrl }: CardV
           <a href={vcardUrl} download className="btn btn--primary btn--full">
             <DownloadIcon /> Kontakt speichern
           </a>
-          {/* Only rendered on iOS / macOS Safari – other visitors keep QR + vCard */}
+          {/* Nur auf iOS / macOS Safari sichtbar – andere Besucher nutzen QR + vCard */}
           {walletUrl && <AddToWalletButton walletUrl={walletUrl} />}
+          {/* Nur auf Android sichtbar */}
+          {googleWalletSlug && <AddToGoogleWalletButton cardSlug={googleWalletSlug} />}
           <button onClick={handleShare} className="btn btn--secondary btn--full">
             <ShareIcon /> Teilen
           </button>
