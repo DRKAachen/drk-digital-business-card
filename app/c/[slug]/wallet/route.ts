@@ -31,7 +31,12 @@ return NextResponse.json({ error: 'Karte nicht gefunden' }, { status: 404 })
 try {
 const cardUrl = `${getSiteUrl()}/c/${card.slug}`
 const pkpass = await generateWalletPass(card, cardUrl)
-const filename = `${card.first_name}_${card.last_name}.pkpass`
+// Nur ASCII im Header, sonst wirft Node bei Sonderzeichen im Namen
+const safeName = `${card.first_name}_${card.last_name}`
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g, '')
+.replace(/[^a-zA-Z0-9_-]/g, '_')
+const filename = `${safeName || 'visitenkarte'}.pkpass`
 
 return new NextResponse(new Uint8Array(pkpass), {
 headers: {

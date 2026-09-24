@@ -1,59 +1,70 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import styles from './AddToGoogleWalletButton.module.scss';
+import { useEffect, useState } from 'react'
+import styles from './AddToGoogleWalletButton.module.scss'
 
 interface AddToGoogleWalletButtonProps {
-  cardSlug: string;
-  alwaysShow?: boolean;
+  cardSlug: string
+  /** Button immer anzeigen, unabhängig vom Gerät (z. B. im Dashboard des Besitzers) */
+  alwaysShow?: boolean
 }
 
-export function AddToGoogleWalletButton({
-  cardSlug,
-  alwaysShow = false,
-}: AddToGoogleWalletButtonProps) {
-  const [isAndroid, setIsAndroid] = useState(false);
-  const [jwt, setJwt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+const BUTTON_IMAGE = 'https://pay.google.com/about/static/images/brand/wallet_save_button.png'
+
+type Status = 'hidden' | 'loading' | 'ready' | 'error'
+
+/**
+ * Button „Zu Google Wallet hinzufügen".
+ * Rendert nur auf Android (oder mit alwaysShow). Der JWT wird erst geladen,
+ * wenn der Button tatsächlich angezeigt wird.
+ */
+export function AddToGoogleWalletButton({ cardSlug, alwaysShow = false }: AddToGoogleWalletButtonProps) {
+  const [status, setStatus] = useState<Status>('hidden')
+  const [saveUrl, setSaveUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    setIsAndroid(/android/.test(userAgent) || alwaysShow);
-    fetchJWT();
-  }, [cardSlug, alwaysShow]);
+    const isAndroid = /android/i.test(navigator.userAgent)
+    if (!isAndroid && !alwaysShow) return
 
-  const fetchJWT = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/c/${cardSlug}/google-wallet`);
-      const data = await response.json();
-      if (data.jwt) {
-        setJwt(data.jwt);
-      }
-    } catch (error) {
-      console.error('Failed to fetch Google Wallet JWT:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const controller = new AbortController()
+    setStatus('loading')
 
-  if (!isAndroid) {
-    return null;
-  }
+    fetch(`/c/${encodeURIComponent(cardSlug)}/google-wallet`, { signal: controller.signal })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok || !data.jwt) throw new Error(data.error || `HTTP ${res.status}`)
+        setSaveUrl(`https://pay.google.com/gp/v/save/${data.jwt}`)
+        setStatus('ready')
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return
+        console.error('[google-wallet] JWT konnte nicht geladen werden:', err)
+        setStatus('error')
+      })
 
-  const addToWalletUrl = jwt ? `https://pay.google.com/gp/v/save/${jwt}` : null;
+    return () => controller.abort()
+  }, [cardSlug, alwaysShow])
+
+  // Ohne Android oder bei Fehler nichts anzeigen – QR-Code und vCard bleiben verfügbar
+  if (status === 'hidden' || status === 'error') return null
+
+  const image = (
+    // Offizielles Google-Wallet-Badge, extern gehostet laut Google-Markenrichtlinien
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={BUTTON_IMAGE} alt="Zu Google Wallet hinzufügen" className={styles.image} />
+  )
 
   return (
     <div className={styles.container}>
-      {addToWalletUrl ? (
-        <a href={addToWalletUrl} className={styles.button} target="_blank" rel="noopener noreferrer">
-          <img src="https://pay.google.com/about/static/images/brand/wallet_save_button.png" alt="Save to Google Wallet" className={styles.image} />
+      {status === 'ready' && saveUrl ? (
+        <a href={saveUrl} className={styles.button} target="_blank" rel="noopener noreferrer">
+          {image}
         </a>
       ) : (
-        <button className={styles.button} disabled>
-          <img src="https://pay.google.com/about/static/images/brand/wallet_save_button.png" alt="Save to Google Wallet" className={styles.image} />
+        <button type="button" className={styles.button} disabled aria-busy="true">
+          {image}
         </button>
       )}
     </div>
-  );
+  )
 }

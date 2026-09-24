@@ -1,36 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { generateGoogleWalletJWT, isGoogleWalletConfigured } from '@/lib/google-wallet';
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
+import { generateGoogleWalletJWT, isGoogleWalletConfigured } from '@/lib/google-wallet'
+import type { CardRow } from '@/lib/types'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  const { slug } = await params;
-  
+interface RouteContext {
+  params: Promise<{ slug: string }>
+}
+
+/**
+ * Liefert den signierten JWT für „Zu Google Wallet hinzufügen" einer veröffentlichten Karte.
+ * Der Button leitet damit auf https://pay.google.com/gp/v/save/<jwt> weiter.
+ */
+export async function GET(_request: Request, context: RouteContext) {
+  const { slug } = await context.params
+
+  if (!isGoogleWalletConfigured()) {
+    return NextResponse.json({ error: 'Google Wallet ist nicht konfiguriert' }, { status: 503 })
+  }
+
+  const card: CardRow | null = await prisma.card.findFirst({
+    where: { slug, is_published: true },
+  })
+
+  if (!card) {
+    return NextResponse.json({ error: 'Karte nicht gefunden' }, { status: 404 })
+  }
+
   try {
-    if (!isGoogleWalletConfigured()) {
-      return NextResponse.json(
-        { error: 'Google Wallet is not configured' },
-        { status: 503 }
-      );
-    }
-
-    const passData = {
-      name: 'DRK Mitglied',
-      title: 'Deutsches Rotes Kreuz',
-      email: 'contact@drk.de',
-      phone: '+49 241 123456',
-    };
-
-    const isOwner = true;
-    const jwt = generateGoogleWalletJWT(slug, passData, isOwner);
-
-    return NextResponse.json({ jwt });
-  } catch (error) {
-    console.error('Google Wallet error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate Google Wallet JWT' },
-      { status: 500 }
-    );
+    const jwt = generateGoogleWalletJWT(card)
+    return NextResponse.json({ jwt }, { headers: { 'Cache-Control': 'no-store' } })
+  } catch (err) {
+    console.error('[google-wallet] JWT-Erstellung fehlgeschlagen:', err)
+    return NextResponse.json({ error: 'JWT-Erstellung fehlgeschlagen' }, { status: 500 })
   }
 }
