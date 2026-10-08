@@ -52,11 +52,11 @@ return (
 function WalletIcon() {
 return (
 <svg className={styles.icon} viewBox="0 0 40 40" aria-hidden="true">
-<rect x="4" y="9" width="32" height="24" rx="4" fill="#fff" opacity="0.15" />
-<rect x="4" y="13" width="32" height="20" rx="4" fill="#4cd964" />
-<rect x="4" y="17" width="32" height="16" rx="4" fill="#ffcc00" />
-<rect x="4" y="21" width="32" height="12" rx="4" fill="#ff9500" />
-<rect x="4" y="25" width="32" height="8" rx="4" fill="#ff3b30" />
+<rect x="4" y="9" width="32" height="24" rx="2.5" fill="#fff" opacity="0.15" />
+<rect x="4" y="13" width="32" height="20" rx="2.5" fill="#4cd964" />
+<rect x="4" y="17" width="32" height="16" rx="2.5" fill="#ffcc00" />
+<rect x="4" y="21" width="32" height="12" rx="2.5" fill="#ff9500" />
+<rect x="4" y="25" width="32" height="8" rx="2.5" fill="#ff3b30" />
 </svg>
 )
 }

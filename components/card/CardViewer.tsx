@@ -5,7 +5,6 @@ import type { CardRow } from '@/lib/types'
 import { getPhotoUrl } from '@/lib/photo'
 import SupportButton from '@/components/support/SupportButton'
 import AddToWalletButton from '@/components/wallet/AddToWalletButton'
-import { AddToGoogleWalletButton } from '@/components/wallet/AddToGoogleWalletButton'
 import styles from './CardViewer.module.scss'
 
 interface CardViewerProps {
@@ -16,8 +15,6 @@ interface CardViewerProps {
   vcardUrl: string
   /** Full URL for the Apple Wallet pass endpoint (undefined when Wallet is not configured) */
   walletUrl?: string
-  /** Slug für den Google-Wallet-Pass (undefined, wenn Google Wallet nicht konfiguriert ist) */
-  googleWalletSlug?: string
 }
 
 /**
@@ -29,7 +26,6 @@ export default function CardViewer({
   cardUrl,
   vcardUrl,
   walletUrl,
-  googleWalletSlug,
 }: CardViewerProps) {
   const fullName = `${card.first_name} ${card.last_name}`
   const initials = `${card.first_name.charAt(0)}${card.last_name.charAt(0)}`.toUpperCase()
@@ -208,8 +204,6 @@ export default function CardViewer({
           </a>
           {/* Nur auf iOS / macOS Safari sichtbar – andere Besucher nutzen QR + vCard */}
           {walletUrl && <AddToWalletButton walletUrl={walletUrl} />}
-          {/* Nur auf Android sichtbar */}
-          {googleWalletSlug && <AddToGoogleWalletButton cardSlug={googleWalletSlug} />}
           <button onClick={handleShare} className="btn btn--secondary btn--full">
             <ShareIcon /> Teilen
           </button>

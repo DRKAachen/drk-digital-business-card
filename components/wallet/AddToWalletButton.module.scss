@@ -1,30 +1,41 @@
 @use '@/styles/variables' as *;
 
-// Orientiert sich an Apples „Add to Apple Wallet"-Badge: schwarze Pille, weißer Text.
+// Schwarzer Balken mit weißem Text, angelehnt an Apples „Add to Apple Wallet".
+// Radius, Höhe und Abstände bewusst identisch zu .btn (styles/globals.scss),
+// damit der Button in der Reihe mit „Kontakt speichern" und „Teilen" nicht
+// als Fremdkörper wirkt.
 .button {
-display: inline-flex;
-align-items: center;
-gap: 0.6rem;
-width: 100%;
-justify-content: center;
-padding: 0.65rem 1.1rem;
-background: #000;
-color: #fff;
-border-radius: 999px;
-text-decoration: none;
-line-height: 1.1;
-transition: opacity 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  width: 100%;
+  justify-content: center;
+  padding: $spacing-3 $spacing-6;
+  background: $black;
+  color: $white;
+  border-radius: $radius-md;
+  text-decoration: none;
+  line-height: 1.1;
+  transition: background-color $transition-fast, box-shadow $transition-fast, transform $transition-fast;
 
-&:hover {
-opacity: 0.85;
-color: #fff;
-}
+  &:hover {
+    background: $gray-800;
+    color: $white;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .icon {
-width: 32px;
-height: 32px;
-flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  // Eigener Radius am Wallet-Symbol, damit es nicht runder wirkt als der Button.
+  border-radius: $radius-sm;
 }
 
 .text {
@@ -34,11 +45,12 @@ align-items: flex-start;
 }
 
 .small {
-font-size: 0.65rem;
-letter-spacing: 0.02em;
+  font-size: $font-size-xs;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
 }
 
 .big {
-font-size: 1.05rem;
-font-weight: 600;
+  font-size: $font-size-base;
+  font-weight: 600;
 }

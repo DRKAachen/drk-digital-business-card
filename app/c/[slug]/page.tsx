@@ -5,7 +5,6 @@ import { getSiteUrl } from '@/lib/url'
 import type { CardRow } from '@/lib/types'
 import CardViewer from '@/components/card/CardViewer'
 import {isWalletConfigured} from '@/lib/wallet'
-import { isGoogleWalletConfigured } from '@/lib/google-wallet'
 interface PageProps {
   params: Promise<{ slug: string }>
 }
@@ -72,7 +71,6 @@ export default async function CardPage({ params }: PageProps) {
   const cardUrl = `${siteUrl}/c/${card.slug}`
 const vcardUrl = `${siteUrl}/c/${card.slug}/vcard`
     const walletUrl = isWalletConfigured() ? `${siteUrl}/c/${card.slug}/wallet` : undefined
-  const googleWalletSlug = isGoogleWalletConfigured() ? card.slug : undefined
 
   return (
     <CardViewer
@@ -80,7 +78,6 @@ const vcardUrl = `${siteUrl}/c/${card.slug}/vcard`
       cardUrl={cardUrl}
       vcardUrl={vcardUrl}
       walletUrl={walletUrl}
-      googleWalletSlug={googleWalletSlug}
     />
   )
 }
