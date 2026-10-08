@@ -39,6 +39,35 @@ function loadImages(): Record<string, Buffer> {
   return images
 }
 
+/** Maskiert HTML-Sonderzeichen, damit Werte das Markup in attributedValue nicht zerlegen. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/** Baut ein <a>-Element für attributedValue. Beide Seiten werden maskiert. */
+function link(href: string, text: string): string {
+  return `<a href='${escapeHtml(href)}'>${escapeHtml(text)}</a>`
+}
+
+/** Ergänzt https://, wenn der Nutzer die URL ohne Schema eingetragen hat. */
+function withProtocol(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+/** Kürzt eine URL für die Anzeige: ohne Schema, ohne www., ohne Schrägstrich am Ende. */
+function prettyUrl(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '')
+}
+
+/** Reduziert eine Telefonnummer auf das, was in einem tel:-Link erlaubt ist. */
+function telHref(phone: string): string {
+  return phone.replace(/[^\d+]/g, '')
+}
+
 /** Construit et signe le .pkpass pour une carte. Le QR code dedans = l'URL publique de la carte. */
 export async function generateWalletPass(card: CardRow, cardUrl: string): Promise<Buffer> {
   const fullName = `${card.first_name} ${card.last_name}`
@@ -71,24 +100,89 @@ export async function generateWalletPass(card: CardRow, cardUrl: string): Promis
   if (card.title) pass.secondaryFields.push({ key: 'title', label: 'POSITION', value: card.title })
   if (card.organization) pass.auxiliaryFields.push({ key: 'org', label: 'ORGANISATION', value: card.organization })
 
-  // Verso (le "i" en haut à droite du pass)
-  if (card.email) pass.backFields.push({ key: 'email', label: 'E-Mail', value: card.email })
-  if (card.phone) pass.backFields.push({ key: 'phone', label: 'Telefon', value: card.phone })
-  if (card.mobile) pass.backFields.push({ key: 'mobile', label: 'Mobil', value: card.mobile })
+  /*
+   * Kartendetails (frühere "Rückseite", seit iOS 16 unter „Kartendetails").
+   *
+   * Nur hier sind Links erlaubt: Apple rendert in `attributedValue` ein
+   * kleines HTML-Subset inklusive <a href>. Feldwerte auf der Vorderseite
+   * sind dagegen immer reiner Text und können nicht anklickbar sein.
+   *
+   * `value` bleibt als Rückfallebene gesetzt (Apple verlangt es und nutzt es
+   * überall dort, wo attributedValue nicht gerendert wird). Wo wir einen
+   * eigenen Link setzen, schalten wir die automatische Erkennung über
+   * `dataDetectorTypes: []` ab, damit iOS nicht zusätzlich verlinkt.
+   */
+  if (card.email) {
+    pass.backFields.push({
+      key: 'email',
+      label: 'E-Mail',
+      value: card.email,
+      attributedValue: link(`mailto:${card.email}`, card.email),
+      dataDetectorTypes: [],
+    })
+  }
+  if (card.phone) {
+    pass.backFields.push({
+      key: 'phone',
+      label: 'Telefon',
+      value: card.phone,
+      attributedValue: link(`tel:${telHref(card.phone)}`, card.phone),
+      dataDetectorTypes: [],
+    })
+  }
+  if (card.mobile) {
+    pass.backFields.push({
+      key: 'mobile',
+      label: 'Mobil',
+      value: card.mobile,
+      attributedValue: link(`tel:${telHref(card.mobile)}`, card.mobile),
+      dataDetectorTypes: [],
+    })
+  }
+
+  // Adresse bewusst ohne eigenen Link: iOS erkennt sie selbst und bietet
+  // „In Karten öffnen" an, was besser ist als ein fest verdrahteter Maps-Link.
   const address = [card.street, [card.zip, card.city].filter(Boolean).join(' '), card.country]
     .filter(Boolean)
     .join('\n')
   if (address) pass.backFields.push({ key: 'address', label: 'Adresse', value: address })
-  if (card.website) pass.backFields.push({ key: 'web', label: 'Webseite', value: card.website })
-  if (card.booking_url) pass.backFields.push({ key: 'booking', label: 'Termin buchen', value: card.booking_url })
-  pass.backFields.push({ key: 'link', label: 'Digitale Visitenkarte', value: cardUrl })
 
-  // QR code identique à celui de la carte imprimée
+  if (card.website) {
+    pass.backFields.push({
+      key: 'web',
+      label: 'Webseite',
+      value: card.website,
+      attributedValue: link(withProtocol(card.website), prettyUrl(card.website)),
+      dataDetectorTypes: [],
+    })
+  }
+  if (card.booking_url) {
+    pass.backFields.push({
+      key: 'booking',
+      label: 'Termin',
+      value: card.booking_url,
+      attributedValue: link(withProtocol(card.booking_url), 'Termin buchen'),
+      dataDetectorTypes: [],
+    })
+  }
+  pass.backFields.push({
+    key: 'link',
+    label: 'Digitale Visitenkarte',
+    value: cardUrl,
+    attributedValue: link(cardUrl, 'Visitenkarte öffnen'),
+    dataDetectorTypes: [],
+  })
+
+  /*
+   * QR-Code wie auf der gedruckten Karte. Der altText steht direkt unter dem
+   * Code und ist die einzige Stelle auf der Vorderseite, an der sich ein
+   * Hinweis unterbringen lässt, ohne ein zusätzliches Feld zu belegen.
+   */
   pass.setBarcodes({
     format: 'PKBarcodeFormatQR',
     message: cardUrl,
     messageEncoding: 'iso-8859-1',
-    altText: 'Scannen für Kontaktdaten',
+    altText: 'Scannen – alle Kontaktdaten unter „Kartendetails“',
   })
 
   return pass.getAsBuffer()
