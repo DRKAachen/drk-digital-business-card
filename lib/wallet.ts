@@ -177,12 +177,18 @@ export async function generateWalletPass(card: CardRow, cardUrl: string): Promis
    * QR-Code wie auf der gedruckten Karte. Der altText steht direkt unter dem
    * Code und ist die einzige Stelle auf der Vorderseite, an der sich ein
    * Hinweis unterbringen lässt, ohne ein zusätzliches Feld zu belegen.
+   *
+   * ACHTUNG: Apple rendert den altText einzeilig und schneidet ihn mit „…“ ab –
+   * Zeilenumbrüche gibt es dort nicht. Auf dem Mac wird der Pass kleiner
+   * dargestellt als auf dem iPhone, der Text muss also auch dort passen.
+   * Erfahrungswert: ab etwa 25 Zeichen wird es eng. Dass man einen QR-Code
+   * scannt, erklärt sich von selbst – der Platz gehört dem Hinweis.
    */
   pass.setBarcodes({
     format: 'PKBarcodeFormatQR',
     message: cardUrl,
     messageEncoding: 'iso-8859-1',
-    altText: 'Scannen – alle Kontaktdaten unter „Kartendetails“',
+    altText: 'Mehr unter Kartendetails',
   })
 
   return pass.getAsBuffer()
