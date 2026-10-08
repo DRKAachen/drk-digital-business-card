@@ -1,56 +1,43 @@
 @use '@/styles/variables' as *;
 
-// Schwarzer Balken mit weißem Text, angelehnt an Apples „Add to Apple Wallet".
-// Radius, Höhe und Abstände bewusst identisch zu .btn (styles/globals.scss),
-// damit der Button in der Reihe mit „Kontakt speichern" und „Teilen" nicht
-// als Fremdkörper wirkt.
-.button {
-  display: inline-flex;
-  align-items: center;
-  gap: $spacing-2;
-  width: 100%;
+/*
+ * Apples offizielles „Zu Apple Wallet hinzufügen"-Badge.
+ *
+ * Das Artwork bringt Hintergrund, Rand und Eckradius selbst mit und darf
+ * laut Markenrichtlinien weder verzerrt noch überlagert werden. Deshalb:
+ * kein eigener Hintergrund, kein Radius, keine Breitenstreckung — nur die
+ * Höhe wird gesetzt, die Breite folgt dem Seitenverhältnis (110,278 : 34,499).
+ *
+ * Es steht bewusst in Originalproportion und zentriert, statt wie die
+ * Nachbarbuttons auf volle Breite gezogen zu werden: so liest es sich als
+ * Systemaktion und nicht als dritter App-Button.
+ */
+.wrapper {
+  display: flex;
   justify-content: center;
-  padding: $spacing-3 $spacing-6;
-  background: $black;
-  color: $white;
+  // Freiraum rundherum, wie von den Richtlinien gefordert.
+  padding: $spacing-2 0;
+}
+
+.badgeLink {
+  display: inline-flex;
   border-radius: $radius-md;
-  text-decoration: none;
-  line-height: 1.1;
-  transition: background-color $transition-fast, box-shadow $transition-fast, transform $transition-fast;
+  transition: opacity $transition-fast;
 
   &:hover {
-    background: $gray-800;
-    color: $white;
-    transform: translateY(-1px);
-    box-shadow: $shadow-md;
+    opacity: 0.85;
   }
 
-  &:active {
-    transform: translateY(0);
+  // Sichtbarer Fokusring für Tastaturbedienung – das Badge selbst bringt keinen mit.
+  &:focus-visible {
+    outline: 2px solid $drk-red;
+    outline-offset: 3px;
   }
 }
 
-.icon {
-  width: 26px;
-  height: 26px;
-  flex-shrink: 0;
-  // Eigener Radius am Wallet-Symbol, damit es nicht runder wirkt als der Button.
-  border-radius: $radius-sm;
-}
-
-.text {
-display: flex;
-flex-direction: column;
-align-items: flex-start;
-}
-
-.small {
-  font-size: $font-size-xs;
-  letter-spacing: 0.02em;
-  opacity: 0.85;
-}
-
-.big {
-  font-size: $font-size-base;
-  font-weight: 600;
+.badge {
+  display: block;
+  // 44px entspricht Apples empfohlener Mindestgröße für Tap-Ziele.
+  height: 44px;
+  width: auto;
 }
