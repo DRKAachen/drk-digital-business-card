@@ -225,7 +225,15 @@ Checkliste für ein sauberes PROD-Deployment:
 7. **Deploy starten** in Coolify.
 8. **Smoke-Test**: Login → Karte erstellen → veröffentlichen → QR-Code scannen → vCard herunterladen.
 
-Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma migrate dev --name <name>`), committen, Code deployen und **anschließend** `npx prisma migrate deploy` gegen PROD ausführen.
+Bei künftigen Schema-Änderungen: neue Migration lokal erzeugen (`npx prisma migrate dev --name <name>`), committen, dann **zuerst** `npx prisma migrate deploy` gegen PROD ausführen und **erst danach** den Code deployen.
+
+> **Reihenfolge beachten – Migration vor Deploy.** Der Prisma-Client des neuen Codes selektiert die neuen Spalten explizit. Geht der Code live, bevor die Migration angewendet wurde, schlägt jede Abfrage mit `P2022 – column does not exist` fehl und die betroffenen Seiten liefern einen Server-Fehler, bis die Migration nachgezogen wird.
+>
+> Umgekehrt ist die Reihenfolge gefahrlos, solange die Migration **additiv** ist (neue Nullable-Spalte, neue Tabelle): Der alte Code fragt die neue Spalte schlicht nicht ab und läuft unverändert weiter.
+>
+> Für **destruktive** Änderungen (Spalte löschen/umbenennen, `NOT NULL` ohne Default) gilt das nicht – diese brechen den alten Code sofort. Dort in zwei Schritten vorgehen (expand/contract): erst additiv migrieren und Code deployen, der ohne das alte Feld auskommt, dann in einem späteren Deploy die alte Spalte entfernen.
+
+Hinweis: Das Laufzeit-Image startet über `CMD ["node", "server.js"]` (Next.js Standalone-Output) und enthält keinen Prisma-CLI. Ein `prisma migrate deploy` im `start`-Skript von `package.json` würde daher **nie ausgeführt** – Migrationen laufen ausschließlich manuell wie oben beschrieben.
 
 ## Projektstruktur
 
