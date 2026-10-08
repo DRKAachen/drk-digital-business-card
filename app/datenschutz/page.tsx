@@ -141,8 +141,38 @@ export default function DatenschutzPage() {
           Die Karte ist dann nicht mehr öffentlich abrufbar.
         </p>
 
-        {/* --- 9. Datenspeicherung und Löschung --- */}
-        <h2 style={h2Style}>9. Speicherdauer und Löschung</h2>
+        {/* --- 9. Apple Wallet --- */}
+        <h2 style={h2Style}>9. Apple Wallet</h2>
+        <p>
+          Auf veröffentlichten Visitenkarten können Besucherinnen und Besucher mit
+          iPhone, iPad oder Mac die Karte über die Schaltfläche &bdquo;Zu Apple Wallet
+          hinzufügen&ldquo; als Wallet-Karte speichern. Die Nutzung ist freiwillig und
+          erfolgt ausschließlich auf aktive Auswahl hin.
+        </p>
+        <p style={{ marginTop: '0.75rem' }}>
+          Die Wallet-Karte enthält Name, Position, Organisation, die auf der Karte
+          hinterlegten Kontaktdaten sowie einen QR-Code und einen Link zur
+          Visitenkarte. Ein Profilfoto ist <strong>nicht</strong> enthalten.
+        </p>
+        <p style={{ marginTop: '0.75rem' }}>
+          Die Wallet-Karte wird <strong>vollständig auf unseren eigenen Servern</strong> erzeugt
+          und signiert und direkt an das Gerät ausgeliefert. Es werden dabei{' '}
+          <strong>keine Daten an Apple übermittelt</strong>. Die Karte wird lokal in der
+          Wallet-App gespeichert; eine etwaige Synchronisierung über iCloud erfolgt
+          ausschließlich im Verhältnis zwischen der nutzenden Person und Apple.
+        </p>
+        <p style={{ marginTop: '0.75rem' }}>
+          <strong>Wichtiger Hinweis für Karteninhaberinnen und Karteninhaber:</strong> Eine
+          einmal gespeicherte Wallet-Karte ist eine dauerhafte Kopie auf dem Gerät der
+          jeweiligen Person. Sie enthält den Datenstand des Zeitpunkts, zu dem sie
+          hinzugefügt wurde. Spätere Änderungen an Ihrer Visitenkarte, das Zurückziehen
+          der Veröffentlichung oder das Löschen Ihres Kontos wirken sich auf bereits
+          gespeicherte Wallet-Karten <strong>nicht</strong> aus. Wir haben keine technische
+          Möglichkeit, diese zu aktualisieren oder zurückzurufen.
+        </p>
+
+        {/* --- 10. Datenspeicherung und Löschung --- */}
+        <h2 style={h2Style}>10. Speicherdauer und Löschung</h2>
         <p>
           Ihre Visitenkarten-Daten werden gespeichert, solange Ihr Benutzerkonto besteht.
           Sie können Ihre Visitenkarte jederzeit über das Dashboard bearbeiten oder löschen.
@@ -163,8 +193,8 @@ export default function DatenschutzPage() {
           30 Tagen gelöscht.
         </p>
 
-        {/* --- 10. Ihre Rechte --- */}
-        <h2 style={h2Style}>10. Ihre Rechte</h2>
+        {/* --- 11. Ihre Rechte --- */}
+        <h2 style={h2Style}>11. Ihre Rechte</h2>
         <p>
           Nach der DSGVO stehen Ihnen folgende Rechte zu:
         </p>
@@ -182,8 +212,8 @@ export default function DatenschutzPage() {
           unter <a href="mailto:datenschutz@drk-aachen.de" style={{ color: '#e30613' }}>datenschutz@drk-aachen.de</a>.
         </p>
 
-        {/* --- 11. Beschwerderecht --- */}
-        <h2 style={h2Style}>11. Beschwerderecht bei einer Aufsichtsbehörde</h2>
+        {/* --- 12. Beschwerderecht --- */}
+        <h2 style={h2Style}>12. Beschwerderecht bei einer Aufsichtsbehörde</h2>
         <p>
           Unbeschadet eines anderweitigen verwaltungsrechtlichen oder gerichtlichen Rechtsbehelfs
           haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren
@@ -197,15 +227,15 @@ export default function DatenschutzPage() {
           Web: <a href="https://www.ldi.nrw.de" target="_blank" rel="noopener noreferrer" style={{ color: '#e30613' }}>www.ldi.nrw.de</a>
         </p>
 
-        {/* --- 12. Keine automatisierte Entscheidungsfindung --- */}
-        <h2 style={h2Style}>12. Automatisierte Entscheidungsfindung</h2>
+        {/* --- 13. Keine automatisierte Entscheidungsfindung --- */}
+        <h2 style={h2Style}>13. Automatisierte Entscheidungsfindung</h2>
         <p>
           Es findet keine automatisierte Entscheidungsfindung oder Profiling im Sinne
           von Art. 22 DSGVO statt.
         </p>
 
-        {/* --- 13. Änderungen --- */}
-        <h2 style={h2Style}>13. Änderungen dieser Datenschutzerklärung</h2>
+        {/* --- 14. Änderungen --- */}
+        <h2 style={h2Style}>14. Änderungen dieser Datenschutzerklärung</h2>
         <p>
           Wir behalten uns vor, diese Datenschutzerklärung bei Änderungen an der Anwendung
           oder bei neuen rechtlichen Anforderungen anzupassen. Die aktuelle Version ist stets
