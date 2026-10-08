@@ -199,11 +199,13 @@ export default function CardViewer({
 
         {/* Footer buttons */}
         <div className={styles.footer}>
+          {/* Erster Button der Gruppe. Behält Apples feste Proportionen und wird
+              deshalb nicht wie die beiden darunter auf volle Breite gezogen.
+              Nur auf iOS / macOS Safari sichtbar – alle anderen nutzen QR + vCard. */}
+          {walletUrl && <AddToWalletButton walletUrl={walletUrl} />}
           <a href={vcardUrl} download className="btn btn--primary btn--full">
             <DownloadIcon /> Kontakt speichern
           </a>
-          {/* Nur auf iOS / macOS Safari sichtbar – andere Besucher nutzen QR + vCard */}
-          {walletUrl && <AddToWalletButton walletUrl={walletUrl} />}
           <button onClick={handleShare} className="btn btn--secondary btn--full">
             <ShareIcon /> Teilen
           </button>

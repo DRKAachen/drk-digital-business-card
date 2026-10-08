@@ -15,8 +15,12 @@
 .wrapper {
   display: flex;
   justify-content: center;
-  // Freiraum rundherum, wie von den Richtlinien gefordert.
-  padding: $spacing-2 0;
+  /*
+   * Kein eigenes Padding: das Badge steht als erster Eintrag in der
+   * Button-Gruppe von CardViewer (.footer), die als Flex-Spalte bereits
+   * `gap` zwischen den Elementen setzt. Zusätzlicher Abstand hier würde
+   * den Rhythmus der Gruppe brechen.
+   */
 }
 
 .badgeLink {
