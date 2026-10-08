@@ -93,6 +93,10 @@ model Card {
   booking_url  String?
   photo_path   String?
   is_published Boolean  @default(false)
+  // Steuert, ob die öffentliche Karte den "Zu Apple Wallet hinzufügen"-Button
+  // anbietet. Standard an für neue Karten; Bestandskarten wurden per Migration
+  // bewusst auf false gesetzt, weil ihre Inhaber dem nie zugestimmt haben.
+  wallet_enabled Boolean @default(true)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 

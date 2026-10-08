@@ -70,7 +70,10 @@ export default async function CardPage({ params }: PageProps) {
   const siteUrl = getSiteUrl()
   const cardUrl = `${siteUrl}/c/${card.slug}`
 const vcardUrl = `${siteUrl}/c/${card.slug}/vcard`
-    const walletUrl = isWalletConfigured() ? `${siteUrl}/c/${card.slug}/wallet` : undefined
+    // Wallet nur anbieten, wenn serverseitig konfiguriert UND von der Karteninhaberin
+  // bzw. dem Karteninhaber freigeschaltet.
+  const walletUrl =
+    isWalletConfigured() && card.wallet_enabled ? `${siteUrl}/c/${card.slug}/wallet` : undefined
 
   return (
     <CardViewer

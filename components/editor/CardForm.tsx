@@ -54,6 +54,9 @@ export default function CardForm({ existingCard }: CardFormProps) {
     xing: existingCard?.xing ?? '',
     booking_url: existingCard?.booking_url ?? '',
     is_published: existingCard?.is_published ?? false,
+    // Neue Karten mit Wallet an; Bestandskarten behalten ihren Wert (per
+    // Migration auf false), bis sie bewusst eingeschaltet werden.
+    wallet_enabled: existingCard?.wallet_enabled ?? true,
   })
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -325,6 +328,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
         booking_url: normalizeUrl(form.booking_url),
         photo_path: photoPath,
         is_published: form.is_published,
+        wallet_enabled: form.wallet_enabled,
       }
 
       if (isEditing) {
@@ -610,15 +614,52 @@ export default function CardForm({ existingCard }: CardFormProps) {
           </span>
         </label>
         {form.is_published && (
-          <p className={styles.publishNotice}>
-            Mit der Veröffentlichung werden Ihre eingegebenen Kontaktdaten (Name, Position,
-            Kontaktdaten, Adresse, Online-Profile, ggf. Buchungslink und Foto) über eine
-            öffentliche URL für jeden abrufbar. Sie können die Veröffentlichung jederzeit rückgängig machen.
-            Mehr dazu in unserer{' '}
-            <a href="/datenschutz" target="_blank" rel="noopener noreferrer">
-              Datenschutzerklärung
-            </a>.
-          </p>
+          <>
+            <p className={styles.publishNotice}>
+              Mit der Veröffentlichung werden Ihre eingegebenen Kontaktdaten (Name, Position,
+              Kontaktdaten, Adresse, Online-Profile, ggf. Buchungslink und Foto) über eine
+              öffentliche URL für jeden abrufbar. Sie können die Veröffentlichung jederzeit rückgängig machen.
+              Mehr dazu in unserer{' '}
+              <a href="/datenschutz" target="_blank" rel="noopener noreferrer">
+                Datenschutzerklärung
+              </a>.
+            </p>
+
+            {/*
+              Wallet-Schalter bewusst erst hier, direkt unter dem Veröffentlichen-Hinweis:
+              Die Funktion greift nur bei veröffentlichten Karten, und genau an dieser
+              Stelle wird über Sichtbarkeit entschieden. Der Hinweis auf die
+              Unwiderruflichkeit steht dabei, weil er sich von der Veröffentlichung
+              unterscheidet – die lässt sich zurücknehmen, ein gespeicherter Pass nicht.
+            */}
+            <label className={styles.toggle}>
+              <input
+                type="checkbox" name="wallet_enabled"
+                checked={form.wallet_enabled} onChange={handleChange}
+              />
+              <span className={styles.toggleLabel}>
+                Speichern in Apple Wallet erlauben
+              </span>
+              <span className={styles.toggleHint}>
+                {form.wallet_enabled
+                  ? 'Besucher können Ihre Karte als Wallet-Karte speichern.'
+                  : 'Ihre Karte kann nicht in Apple Wallet gespeichert werden.'}
+              </span>
+            </label>
+            {form.wallet_enabled && (
+              <p className={styles.publishNotice}>
+                Besucherinnen und Besucher mit iPhone, iPad oder Mac können Ihre Karte in
+                Apple Wallet speichern. Die Wallet-Karte enthält Name, Position, Organisation
+                und Ihre Kontaktdaten – kein Foto. Sie wird auf unseren Servern erzeugt, es
+                werden keine Daten an Apple übermittelt.{' '}
+                <strong>
+                  Eine gespeicherte Wallet-Karte verbleibt dauerhaft auf dem Gerät der
+                  jeweiligen Person und lässt sich – anders als die Veröffentlichung – später
+                  nicht zurückziehen oder aktualisieren.
+                </strong>
+              </p>
+            )}
+          </>
         )}
       </fieldset>
 

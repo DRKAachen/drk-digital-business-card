@@ -29,6 +29,7 @@ xing: null,
 booking_url: null,
 photo_path: null,
 is_published: true,
+wallet_enabled: true,
 created_at: new Date(),
 updated_at: new Date(),
 }

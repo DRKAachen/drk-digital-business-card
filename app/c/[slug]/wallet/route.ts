@@ -21,7 +21,7 @@ return NextResponse.json({ error: 'Apple Wallet ist nicht konfiguriert' }, { sta
 }
 
 const card: CardRow | null = await prisma.card.findFirst({
-where: { slug, is_published: true },
+where: { slug, is_published: true, wallet_enabled: true },
 })
 
 if (!card) {
