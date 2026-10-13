@@ -643,7 +643,7 @@ export default function CardForm({ existingCard }: CardFormProps) {
               <span className={styles.toggleHint}>
                 {form.wallet_enabled
                   ? 'Besucher können Ihre Karte als Wallet-Karte speichern.'
-                  : 'Ihre Karte kann nicht in Apple Wallet gespeichert werden.'}
+                  : 'Deaktiviert. Setzen Sie den Haken, damit Besucher Ihre Karte in Apple Wallet speichern können.'}
               </span>
             </label>
             {form.wallet_enabled && (
