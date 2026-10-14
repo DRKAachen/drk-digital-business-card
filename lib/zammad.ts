@@ -167,6 +167,11 @@ export async function createSupportTicket({
           type: 'web',
           sender: 'Customer',
           from: email,
+          // Zammad normalizes a web article's `from` to the customer's display
+          // name (no address) — with a named customer the agent "Reply" button
+          // then falls back to the bot. `reply_to` is stored verbatim and
+          // provides the reply target (found during the MBV-Digital rollout).
+          reply_to: email,
           origin_by_id: customerId ?? undefined,
           internal: false,
           body,
