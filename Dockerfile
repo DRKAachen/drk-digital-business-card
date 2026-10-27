@@ -16,6 +16,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Umgebungs-Banner (Dev/Test): auch statisch vorgerenderte Seiten sollen den
+# Hinweis enthalten; ohne gesetztes Build-Arg (Produktion) bleibt er leer.
+ARG UMGEBUNG_HINWEIS
+ENV UMGEBUNG_HINWEIS=$UMGEBUNG_HINWEIS
 RUN npx prisma generate
 RUN npm run build
 

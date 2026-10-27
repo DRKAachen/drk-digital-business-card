@@ -22,9 +22,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Umgebungs-Banner: nur sichtbar, wo die Variable gesetzt ist (Dev/Test);
+  // in der Produktivumgebung fehlt sie, dort kann das Banner nie erscheinen.
+  const umgebungsHinweis = process.env.UMGEBUNG_HINWEIS
   return (
     <html lang="de">
       <body>
+        {umgebungsHinweis && <div className="umgebung-banner">{umgebungsHinweis}</div>}
         <SessionProvider>
           <a href="#main-content" className="sr-only">
             Zum Inhalt springen
