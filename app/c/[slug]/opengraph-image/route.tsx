@@ -1,7 +1,14 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/db'
 import { getPhotoUrl } from '@/lib/photo'
+import { fetchPhotoAsPngDataUri } from '@/lib/image-convert'
 import type { CardRow } from '@/lib/types'
+
+/**
+ * Kantenlänge des eingebetteten Fotos. Der Avatar wird mit 220px dargestellt;
+ * doppelte Auflösung, damit er auf hochauflösenden Anzeigen scharf bleibt.
+ */
+const PHOTO_SIZE = 440
 
 /**
  * Dynamically generates an Open Graph image (1200x630) for a card.
@@ -24,7 +31,14 @@ export async function GET(
 
   const fullName = `${card.first_name} ${card.last_name}`
   const initials = `${card.first_name.charAt(0)}${card.last_name.charAt(0)}`.toUpperCase()
+  /*
+   * Foto serverseitig nach PNG wandeln und einbetten, statt Satori die URL zu
+   * geben: Fotos liegen als WebP im Objektspeicher, und Satori lädt in <img>
+   * nur PNG, JPEG und SVG. Mit der URL blieb der Avatar-Kreis still leer.
+   * Schlägt die Konvertierung fehl, greift unten der Initialen-Fallback.
+   */
   const photoUrl = getPhotoUrl(card.photo_path)
+  const photoData = photoUrl ? await fetchPhotoAsPngDataUri(photoUrl, PHOTO_SIZE) : null
 
   return new ImageResponse(
     (
@@ -102,10 +116,9 @@ export async function GET(
             justifyContent: 'center',
           }}
         >
-          {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+          {photoData ? (
             <img
-              src={photoUrl}
+              src={photoData}
               alt=""
               width={220}
               height={220}
@@ -140,6 +153,17 @@ export async function GET(
     {
       width: 1200,
       height: 630,
+      headers: {
+        /*
+         * Jeder Abruf lädt und konvertiert das Foto. Social-Media-Crawler
+         * fragen dieselbe Karte beim Teilen mehrfach ab, deshalb eine Stunde
+         * cachen und bis zu einen Tag veraltet ausliefern, während im
+         * Hintergrund neu erzeugt wird. Ändert jemand sein Foto, greift die
+         * Vorschau spätestens nach einer Stunde — Messenger halten ihre
+         * eigenen Kopien ohnehin deutlich länger.
+         */
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      },
     },
   )
 }
